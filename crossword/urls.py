@@ -20,6 +20,9 @@ from django.conf import settings
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("",include("Home.urls")),
+    path("solver/",include("Solver.urls")),
+    path("generator/",include("Generator.urls")),
     path("NYTgrid/", include('NYTgrid.urls'))
 ]
 

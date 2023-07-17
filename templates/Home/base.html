@@ -1,0 +1,35 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href= {%static "css/base.css" %}>
+    <title>EZ-Crossword</title>
+</head>
+<body>
+    <nav>
+        <div class="logo-box">
+            <img src={% static "images/logo.svg"%} alt="crossword-logo" class="logo">
+            <div class="logo-text">EZ-Crossword</div>
+        </div>
+        <div class="nav-links">
+            <ul>
+                <li> <a class = 'active' href={% url 'Home' %}>Home</a></li>
+                <li> <a href={% url 'Solver' %}>Solver</a></li>
+                <li> <a href={% url 'Generator' %}>Generator</a></li>
+                {% comment %} <li> <a href="{% url 'About us' %}">Generator</a></li> {% endcomment %}
+                <li> <a href="#">About-Us</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    {% block hero %}
+    <div class="hero">
+    </div>
+    {% endblock hero %}
+    <footer>
+        <div class="copyright-box"> &copy; 2023 Team TimTim. All rights reserved.</div>
+    </footer>
+</body>
+</html>

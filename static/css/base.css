@@ -1,0 +1,105 @@
+@import url('https://fonts.googleapis.com/css2?family=Lora&family=Montserrat&display=swap');
+:root{
+    --font-size-small: 0.8rem;
+    --font-size-normal: 1.1rem;
+    --font-size-large: 1.2rem;
+    --font-size-logo : 1.5rem;
+
+    --light-white: #fafafa;
+    
+}
+
+li{
+    list-style-type: none;
+    text-decoration: none;
+}
+a{
+    text-decoration: none;
+    color: black;
+}
+
+*,*::before,*::after{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    /* background-color: rgba(0,100,0,0.1) !important; */
+    font-family: 'Lora', serif;
+}
+body{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 100vh;
+}
+nav{
+   height: 4rem;
+   display: flex; 
+   flex-direction: row;
+   align-items: center;
+   justify-content: left;
+   flex-wrap: wrap;
+   z-index: 1;
+   overflow: hidden;
+   gap: 2rem;
+   box-shadow: 0px 1px 0px rgba(0,0,0,.2);
+   padding-left: 1rem;
+   padding-right: 1rem;
+   margin-left: auto;
+   margin-right: auto;
+   position: sticky;
+   top: 0;
+
+}
+
+.logo-box{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: 20rem;
+    gap: 1rem;
+}
+
+.logo-box img{
+    width: 2.5rem;
+    height: 2.5rem;
+}
+
+.logo-text{
+    font-size: var(--font-size-logo);
+    line-height: 2rem;
+    font-weight: bolder;
+}
+.nav-links{
+    width: 40rem;
+}
+.nav-links ul{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: right;
+    gap: 2rem;
+    font-size: var(--font-size-normal);
+}
+.nav-links ul a{
+    padding: 0.3rem;
+    font-weight: 500;
+    transition: 0.3s ease-in-out;
+}
+.nav-links ul a.active{
+    border-bottom: 3px solid black;
+}
+.nav-links ul a:hover{
+    background-color:  #e3e3e1;
+}
+
+
+
+/* Styling the footer */
+footer{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 2rem;
+    background-color: var(--light-white);
+
+}
