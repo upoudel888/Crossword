@@ -3,7 +3,7 @@
     --font-size-small: 0.8rem;
     --font-size-normal: 1.1rem;
     --font-size-large: 1.2rem;
-    --font-size-logo : 1.5rem;
+    --font-size-logo : 1.4rem;
 
     --light-white: #fafafa;
     
@@ -92,6 +92,12 @@ nav{
     background-color:  #e3e3e1;
 }
 
+.hero{
+    flex-grow: 1;
+    padding: 1;
+    margin-left: auto;
+    margin-right: auto;
+}
 
 
 /* Styling the footer */
