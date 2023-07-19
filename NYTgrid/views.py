@@ -50,11 +50,8 @@ def getGrid(request):
 
                                   
     context['grid_rows'] = rows # Array of arrays 1st array element contains cell data for 1st and 1st columnrow as [ {grid_num},{grid-value}] format
-
     context['across_clues'] = grid_data['clues']['across']
     context['down_clues'] = grid_data['clues']['down']
-    print(grid_data)
-    print(context["grid_rows"])
 
 
     return render(request,'NYTgrid/NYTgrid.html', context=context)

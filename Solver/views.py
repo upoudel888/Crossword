@@ -48,16 +48,17 @@ def solve(request):
                             temp.append((grid_data['gridnums'][i * no_of_cols + j],grid_data['grid'][i * no_of_cols + j]))
                         rows.append(temp)
                     
+                    
+                    request.session['grid-rows'] = rows
+                    request.session['across_clues'] = []
+                    request.session['down_clues'] = []
+                    
                     context['grid_rows'] = rows # Array of arrays 1st array element contains cell data for 1st and 1st columnrow as [ {grid_num},{grid-value}] format
-
                     context['across_clues'] = []
                     context['down_clues'] = []
-                    # context['across_clues'] = grid_data['clues']['across']
-                    # context['down_clues'] = grid_data['clues']['down']
-                    return render(request,'NYTgrid/NYTgrid.html', context=context)
 
+                    return redirect('Verify')
                 
-
             # Json File Uploaded
             elif crossword_file.content_type == 'application/json':
                 return HttpResponse('JSON file uploaded successfully.')
@@ -68,3 +69,18 @@ def solve(request):
                 return HttpResponse('Invalid file format.')
                    
     return render(request,"Solver/solver.html",context=context)
+
+def verify(request):
+
+    context = {}
+    
+    if(request.method == "GET"):
+        grid_rows = request.session.get("grid-rows")
+        across_clues = request.session.get("across_clues")
+        down_clues = request.session.get("down_clues")
+
+        context['grid_rows'] = grid_rows # Array of arrays 1st array element contains cell data for 1st and 1st columnrow as [ {grid_num},{grid-value}] format
+        context['across_clues'] = []
+        context['down_clues'] = []
+
+        return render(request,"Solver/verify.html",context=context)

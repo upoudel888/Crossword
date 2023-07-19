@@ -194,7 +194,7 @@ def average_out_similar_lines1(lines_m_c,lines_coord,del_threshold):
 def get_square_color(image, box):
 
     # Determine the size of the square region
-    square_size = (box[1][0] - box[0][0]) / 2
+    square_size = (box[1][0] - box[0][0]) / 3
 
     # Determine the coordinates of the square region inside the box
     top_left = (box[0][0] + square_size, box[0][1] + square_size)
@@ -271,7 +271,6 @@ def extract_grid(image):
         p = coordinates_list[0][1] - coordinates_list[1][1]
         # calculating the angle to be rotated
         angle = math.degrees(math.atan(p/(b+0.0001)))
-        print(angle)
 
         if( round(abs(angle)) % 90 != 0):
             rotation_flag = 1
@@ -396,7 +395,6 @@ def extract_grid(image):
         averaged_horizontal_lines = average_out_similar_lines(actual_horizontal_lines,horizontal_lines,del_y_avg*multiplier,is_horizontal=True)
         averaged_vertical_lines = average_out_similar_lines(actual_vertical_lines,vertical_lines,del_x_avg*multiplier,is_horizontal=False)
         i += 1
-        print('here')
         if(i >= 20 or len(averaged_horizontal_lines) == len(averaged_vertical_lines)):
             break
         else:

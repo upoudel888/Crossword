@@ -5,7 +5,15 @@
     --font-size-large: 1.2rem;
     --font-size-logo : 1.4rem;
 
+
+    --light-gray: #e3e3e1;
     --light-white: #fafafa;
+
+
+    --secondary : #4d88f9;
+    --breakpoint-lg: 992px;
+    --breakpoint-md: 768px;
+    --breakpoint-sm: 576px;
     
 }
 
@@ -38,7 +46,7 @@ nav{
    align-items: center;
    justify-content: left;
    flex-wrap: wrap;
-   z-index: 1;
+   z-index: 10;
    overflow: hidden;
    gap: 2rem;
    box-shadow: 0px 1px 0px rgba(0,0,0,.2);
@@ -48,6 +56,7 @@ nav{
    margin-right: auto;
    position: sticky;
    top: 0;
+   background-color: white;
 
 }
 
@@ -106,6 +115,7 @@ footer{
     align-items: center;
     justify-content: center;
     height: 2rem;
-    background-color: var(--light-white);
+    background-color: var(--light-gray);
+    margin-top: 10rem;
 
 }
