@@ -17,7 +17,7 @@
     margin: 0.5rem;   
     background-color: var(--light-white); 
     color: #000;
-    box-shadow: 0 7px 0 0 #2860d8;
+    box-shadow: 0 7px 0 0 var(--secondary-blue-dark);
     border-radius: 5px;
 }
 

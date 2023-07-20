@@ -6,15 +6,28 @@
 {% endblock css %}
 
 {% block hero %}
+    <div class="get-started">
+        <h1 class="emphasis-text">Solve Crosswords Using AI.</h1>
+        <span class="bold">Upload Files to Get Started</span>
+    </div>
 <div class="solver-hero">
     <div class="solver-upload-info">
         <img src={% static 'images/crossword-illus.jpeg'%} class = "solver-illus" alt="Crossword Solver Illustration">
+        <div class="upload-format">
+            <img src={% static "images/img.svg"%} alt="crossword-logo" class="icon"><span>Images</span> <br>
+            <img src={% static "images/json.svg"%} alt="crossword-logo" class="icon"><span> JSON Files</span> <br>
+            <img src={% static "images/puz.svg"%} alt="crossword-logo" class="icon"><span>.PUZ Files</span> <br>
+        </div>
     </div>
-    <div class="form-container">
+    <div class="form-container">     
         <form action = "/solver/" class = "form-inner" method="POST" enctype="multipart/form-data">
-            <span class="emphasis-text"> Upload Files </span>
             {% csrf_token %}
-            <input type="file" name="crossword_file" accept=".jpg, .jpeg, .png, .json, .puz">
+            <label for="images" class="drop-container" id="dropcontainer">
+                <span class="bold">Drop files here</span>
+                or
+                <input type="file" name="crossword_file" accept=".jpg, .jpeg, .png, .json, .puz" required>
+              </label>
+
             <button class="custom-btn btn-11">Upload</button>
         </form>
     </div>

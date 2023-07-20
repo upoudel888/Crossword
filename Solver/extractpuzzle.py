@@ -217,7 +217,6 @@ def get_square_color(image, box):
 # accepts image in grayscale
 def extract_grid(image):
 
-
     # Applying canny edge detector
     canny = cv2.Canny(image,75,25)
     # detecting contours on the canny image

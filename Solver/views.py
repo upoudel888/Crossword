@@ -3,6 +3,8 @@ import cv2
 import numpy as np
 from . import forms
 from .extractpuzzle import extract_grid
+
+from .extractpuzzle1 import extract_grid,get_text
 # Create your views here.
 
 def solve(request):
@@ -28,9 +30,10 @@ def solve(request):
                     return redirect('/solver')
 
                 # Read the image using OpenCV
-                img_array = cv2.imdecode(np.frombuffer(image.read(), np.uint8), cv2.IMREAD_GRAYSCALE)
+                img_array = cv2.imdecode(np.frombuffer(image.read(), np.uint8), cv2.IMREAD_COLOR)
                 try: 
                     grid_data = extract_grid(img_array)
+                    # across,down = get_text(img_array)
                 except Exception as e:
                     HttpResponse(f'Error {e} has occured')
                 else:
@@ -47,7 +50,6 @@ def solve(request):
                             print(i," ",j)
                             temp.append((grid_data['gridnums'][i * no_of_cols + j],grid_data['grid'][i * no_of_cols + j]))
                         rows.append(temp)
-                    
                     
                     request.session['grid-rows'] = rows
                     request.session['across_clues'] = []

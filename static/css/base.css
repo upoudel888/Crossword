@@ -9,8 +9,10 @@
     --light-gray: #e3e3e1;
     --light-white: #fafafa;
 
-
     --secondary-blue : #4d88f9;
+    --secondary-blue-dark:#2860d8 ;
+
+
     --breakpoint-lg: 992px;
     --breakpoint-md: 768px;
     --breakpoint-sm: 576px;
@@ -147,3 +149,6 @@ footer{
       inset 4px 4px 6px 0 rgba(0, 0, 0, .2);
   }
   
+  .bold{
+    font-weight: bold;
+  }
