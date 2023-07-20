@@ -10,7 +10,7 @@
     --light-white: #fafafa;
 
 
-    --secondary : #4d88f9;
+    --secondary-blue : #4d88f9;
     --breakpoint-lg: 992px;
     --breakpoint-md: 768px;
     --breakpoint-sm: 576px;
@@ -104,6 +104,8 @@ nav{
 .hero{
     flex-grow: 1;
     padding: 1;
+    display: flex;
+    flex-direction: column;
     margin-left: auto;
     margin-right: auto;
 }
@@ -116,6 +118,32 @@ footer{
     justify-content: center;
     height: 2rem;
     background-color: var(--light-gray);
-    margin-top: 10rem;
 
 }
+
+/* 11 */
+.btn-11 {
+    padding: 0.5rem;
+    transition: all 0.3s ease;
+    width: 8rem;
+    font-size: var(--font-size-large);
+    line-height: var(--font-size-large);
+    border: none;
+    cursor:pointer;
+    background: #000;
+    color: #fff;
+
+  }
+  .btn-11:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 8px rgba(0,0,0,0);
+
+  }
+  
+  .btn-11:active{
+    box-shadow:  4px 4px 6px 0 rgba(255,255,255,.3),
+                -4px -4px 6px 0 rgba(116, 125, 136, .2), 
+      inset -4px -4px 6px 0 rgba(255,255,255,.2),
+      inset 4px 4px 6px 0 rgba(0, 0, 0, .2);
+  }
+  

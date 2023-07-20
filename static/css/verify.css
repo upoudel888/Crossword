@@ -1,7 +1,7 @@
 .validate-msg{
     padding: 1rem;
     text-align: center;
-    background-color: var(--secondary);
+    background-color: var(--secondary-blue);
     color: white;
     min-width: var(--breakpoint-lg);
     display: flex;
@@ -20,14 +20,20 @@
     box-shadow: 0 7px 0 0 #2860d8;
     border-radius: 5px;
 }
+
 .emphasis-text{
     font-size: var(--font-size-logo);
     border-bottom: 2px solid black;
     font-weight: bold;
 }
 
+
 .note{
-    font-size: var(--font-size-normal);
+    font-size: var(--font-size-small);
+}
+.bold{
+    font-weight: bold;
+    font-size: 1rem;
 }
 
 
@@ -103,30 +109,5 @@
 }
 
 
-/* 11 */
-.btn-11 {
-    padding: 0.5rem;
-    transition: all 0.3s ease;
-    width: 8rem;
-    font-size: var(--font-size-large);
-    line-height: var(--font-size-large);
-    border: none;
-    cursor:pointer;
-    background: #000;
-    color: #fff;
 
-  }
-  .btn-11:hover {
-    transform: scale(1.05);
-    box-shadow: 0 0 8px rgba(0,0,0,0);
-
-  }
-  
-  .btn-11:active{
-    box-shadow:  4px 4px 6px 0 rgba(255,255,255,.3),
-                -4px -4px 6px 0 rgba(116, 125, 136, .2), 
-      inset -4px -4px 6px 0 rgba(255,255,255,.2),
-      inset 4px 4px 6px 0 rgba(0, 0, 0, .2);
-  }
-  
   

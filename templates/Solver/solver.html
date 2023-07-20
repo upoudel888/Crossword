@@ -1,11 +1,22 @@
 {% extends 'Home/base.html' %}
+{% load static %}
+
+{% block css %}
+    <link rel="stylesheet" href={% static "css/solver.css"%}>
+{% endblock css %}
 
 {% block hero %}
-<div class="form-container">
-    <form action = "/solver/" class = "form-inner" method="POST" enctype="multipart/form-data">
-        {% csrf_token %}
-        <input type="file" name="crossword_file" accept=".jpg, .jpeg, .png, .json, .puz">
-        <input type="submit" value="Upload">
-    </form>
+<div class="solver-hero">
+    <div class="solver-upload-info">
+        <img src={% static 'images/crossword-illus.jpeg'%} class = "solver-illus" alt="Crossword Solver Illustration">
+    </div>
+    <div class="form-container">
+        <form action = "/solver/" class = "form-inner" method="POST" enctype="multipart/form-data">
+            <span class="emphasis-text"> Upload Files </span>
+            {% csrf_token %}
+            <input type="file" name="crossword_file" accept=".jpg, .jpeg, .png, .json, .puz">
+            <button class="custom-btn btn-11">Upload</button>
+        </form>
+    </div>
 </div>
 {% endblock hero %}
