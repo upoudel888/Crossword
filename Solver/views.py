@@ -2,9 +2,9 @@ from django.shortcuts import render,HttpResponse,redirect
 import cv2
 import numpy as np
 from . import forms
-from .extractpuzzle import extract_grid
+from .extractpuzzle import extract_grid,get_text
 
-from .extractpuzzle1 import extract_grid,get_text
+# from .extractpuzzle1 import extract_grid,get_tex
 # Create your views here.
 
 def solve(request):
@@ -18,7 +18,6 @@ def solve(request):
         crossword_file = request.FILES['crossword_file']
 
         if crossword_file:
-            print(crossword_file.content_type)
             # Image uploaded
             if crossword_file.content_type.startswith('image'):
                 # Save the image file or perform any necessary processing
@@ -31,36 +30,42 @@ def solve(request):
 
                 # Read the image using OpenCV
                 img_array = cv2.imdecode(np.frombuffer(image.read(), np.uint8), cv2.IMREAD_COLOR)
-                try: 
+
+                try:
                     grid_data = extract_grid(img_array)
-                    # across,down = get_text(img_array)
-                except Exception as e:
-                    HttpResponse(f'Error {e} has occured')
-                else:
-                    print(grid_data)
+
                     rows = []
                     no_of_rows = grid_data['size']['rows']
-                    no_of_cols =  grid_data['size']['cols']
-
+                    no_of_cols = grid_data['size']['cols']
 
                     for i in range(no_of_rows):
                         temp = []
                         for j in range(no_of_cols):
-                            # {grid-nums , grid-data} basically clue_no and answer_alphabet
-                            print(i," ",j)
-                            temp.append((grid_data['gridnums'][i * no_of_cols + j],grid_data['grid'][i * no_of_cols + j]))
+                            temp.append((grid_data['gridnums'][i * no_of_cols + j], grid_data['grid'][i * no_of_cols + j]))
                         rows.append(temp)
-                    
-                    request.session['grid-rows'] = rows
-                    request.session['across_clues'] = []
-                    request.session['down_clues'] = []
-                    
-                    context['grid_rows'] = rows # Array of arrays 1st array element contains cell data for 1st and 1st columnrow as [ {grid_num},{grid-value}] format
-                    context['across_clues'] = []
-                    context['down_clues'] = []
-
-                    return redirect('Verify')
                 
+                    request.session['grid_extraction_failed'] = False
+                    request.session['grid-rows'] = rows
+                except Exception as e:
+                    request.session['grid_extraction_failed'] = True
+                    print("Grid Extraction thing failed:", e)
+
+                try:
+                    across, down = get_text(img_array)
+                    request.session['clue_extraction_failed'] = False
+
+                    across_clues = [str(int(key)) + "   " + value for key, value in across.items()]
+                    down_clues = [str(int(key)) + "   " + value for key, value in down.items()]
+
+                    request.session['across_clues'] = across_clues
+                    request.session['down_clues'] = down_clues
+                except Exception as e:
+                    request.session['clue_extraction_failed'] = True
+                    print("Clue Extraction thing failed:", e)
+
+                return redirect('Verify')
+
+
             # Json File Uploaded
             elif crossword_file.content_type == 'application/json':
                 return HttpResponse('JSON file uploaded successfully.')
@@ -81,8 +86,37 @@ def verify(request):
         across_clues = request.session.get("across_clues")
         down_clues = request.session.get("down_clues")
 
+        if(request.session.get("clue_extraction_failed")):
+            across_clues = []
+            down_clues = []
+        if(request.session.get("grid_extraction_failed")):
+            nums = [[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],
+                    [16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,],
+                    [17,0,0,0,0,0,0,0,0,0,0,0,0,0,0,],
+                    [18,0,0,0,0,0,0,0,0,0,0,0,0,0,0,],
+                    [19,0,0,0,0,0,0,0,0,0,0,0,0,0,0,],
+                    [20,0,0,0,0,0,0,0,0,0,0,0,0,0,0,],
+                    [21,0,0,0,0,0,0,0,0,0,0,0,0,0,0,],
+                    [22,0,0,0,0,0,0,0,0,0,0,0,0,0,0,],
+                    [23,0,0,0,0,0,0,0,0,0,0,0,0,0,0,],
+                    [24,0,0,0,0,0,0,0,0,0,0,0,0,0,0,],
+                    [25,0,0,0,0,0,0,0,0,0,0,0,0,0,0,],
+                    [26,0,0,0,0,0,0,0,0,0,0,0,0,0,0,],
+                    [27,0,0,0,0,0,0,0,0,0,0,0,0,0,0,],
+                    [28,0,0,0,0,0,0,0,0,0,0,0,0,0,0,],
+                    [29,0,0,0,0,0,0,0,0,0,0,0,0,0,0,],
+                    ]
+            rows = []
+            for i in range(15):
+                temp = []
+                for j in range(15):
+                    temp.append((nums[i][j]," "))
+                rows.append(temp)
+            grid_rows = rows
+
+
         context['grid_rows'] = grid_rows # Array of arrays 1st array element contains cell data for 1st and 1st columnrow as [ {grid_num},{grid-value}] format
-        context['across_clues'] = []
-        context['down_clues'] = []
+        context['across_clues'] = across_clues
+        context['down_clues'] = down_clues
 
         return render(request,"Solver/verify.html",context=context)

@@ -6,53 +6,51 @@
 {% endblock css %}
 
 {% block hero %}
-<div class="validate-msg">
-    <div class="special-note">
-        <span class="emphasis-text"> Validation </span> <br> <br>
-        Please validate and correct the detections before proceeding to generate solution. <br><br>
-        <button class="custom-btn btn-11">Proceed</button>
+    <div class="validate-msg">
+        <div class="special-note">
+            <span class="emphasis-text"> Validation </span> <br> <br>
+            Please validate and correct the detections before proceeding to generate solution. <br><br>
+            <button class="custom-btn btn-11">Proceed</button>
+        </div>
+        <span class="note"> <span class = 'bold'>Note : </span> 
+        Click on grid cells to toggle the color. <br>
+        Edit clues in the text area.
+        </span> 
     </div>
-    <span class="note"> <span class = 'bold'>Note : </span> 
-    Click on grid cells to toggle the color. <br>
-    Edit clues in the text area.
-    </span> 
-</div>
 
-    
-</div>
-<div class="crossword">
-    <div class="grid">
-          {% for row_data in grid_rows %}
-            <div class="grid-row" style = "width: calc( 25rem / {{grid_rows|length}}rem);" >
-                {% for num,data in row_data %}
-                    {% if data == "." %}
-                        <div class="grid-cell dead-cell"></div>
-                    {% else %}
-                        <div class="grid-cell">
-                            <div class="cell-num">
-                                {% if num != 0 %} {{num}}{% endif %}
+    <div class="crossword">
+        <div class="grid">
+            {% for row_data in grid_rows %}
+                <div class="grid-row" style = "width: calc( 25rem / {{grid_rows|length}}rem);" >
+                    {% for num,data in row_data %}
+                        {% if data == "." %}
+                            <div class="grid-cell dead-cell"></div>
+                        {% else %}
+                            <div class="grid-cell">
+                                <div class="cell-num">
+                                    {% if num != 0 %} {{num}}{% endif %}
+                                </div>
+                                <div class="cell-data"> {{data}}</div>
                             </div>
-                            <div class="cell-data"> {{data}}</div>
-                        </div>
-                    {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            
+            {% endfor %}
+        </div>
+        <div class="clues">
+            <div class="across-clues">
+                <div class="clue-head-title"> Across </div>
+                {% for clue in across_clues %}
+                    <span class="across-clue"> {{clue|safe}}</span>
                 {% endfor %}
             </div>
-          
-          {% endfor %}
-    </div>
-    <div class="clues">
-        <div class="across-clues">
-            <div class="clue-head-title"> Across </div>
-            {% for clue in across_clues %}
-                <span class="across-clue"> {{clue|safe}}</span>
-            {% endfor %}
-        </div>
-        <div class="down-clues">
-            <div class="clue-head-title"> Down </div>
-            {% for clue in down_clues %}
-                <span class="down-clue"> {{clue|safe}}</span>
-            {% endfor %}
+            <div class="down-clues">
+                <div class="clue-head-title"> Down </div>
+                {% for clue in down_clues %}
+                    <span class="down-clue"> {{clue|safe}}</span>
+                {% endfor %}
+            </div>
         </div>
     </div>
-</div>
 {% endblock hero %}

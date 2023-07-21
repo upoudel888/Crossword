@@ -2,12 +2,13 @@ import cv2
 import numpy as np
 import math
 from sklearn.linear_model import LinearRegression
+from PIL import Image
 import pytesseract
 import re
 
 ## Starting of the code 
-image_path = "try heree.jpg"
 pytesseract.pytesseract.tesseract_cmd = 'C:/Program Files/Tesseract-OCR/tesseract.exe'
+image_path = "try heree.jpg"
 
 def first_preprocessing(image):
     gray = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
@@ -172,9 +173,7 @@ def get_text(image):
     across,down = classify_text(filtered_columns)
     return across,down
 
-################################ Grid Extraction begins here ###########################
-########################################################################################
-
+# Display the image with the rectangle
 
 # for applying non max suppression of the contours
 def calculate_iou(image, contour1, contour2):
@@ -382,7 +381,7 @@ def get_square_color(image, box):
 
     return square_color
 
-# accepts image in grayscale
+# accepts image in RGB model
 def extract_grid(image):
     image = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
     # Applying canny edge detector
@@ -395,7 +394,6 @@ def extract_grid(image):
     filtered_contours = filter_contours(image, sorted_contours[0:10],iou_threshold=0.6,asp_ratio=1,tolerance=0.2)
     # largest Contour Extraction
     largest_contour = filtered_contours[0]
-
 
     # -- Cropping out the largest Contour and Masking Other regions --
 
@@ -438,6 +436,7 @@ def extract_grid(image):
         p = coordinates_list[0][1] - coordinates_list[1][1]
         # calculating the angle to be rotated
         angle = math.degrees(math.atan(p/(b+0.0001)))
+        print(angle)
 
         if( round(abs(angle)) % 90 != 0):
             rotation_flag = 1
@@ -562,6 +561,7 @@ def extract_grid(image):
         averaged_horizontal_lines = average_out_similar_lines(actual_horizontal_lines,horizontal_lines,del_y_avg*multiplier,is_horizontal=True)
         averaged_vertical_lines = average_out_similar_lines(actual_vertical_lines,vertical_lines,del_x_avg*multiplier,is_horizontal=False)
         i += 1
+        print('here')
         if(i >= 20 or len(averaged_horizontal_lines) == len(averaged_vertical_lines)):
             break
         else:
@@ -730,8 +730,6 @@ def extract_grid(image):
                     else:
                         grid_nums.append(0)
                 
-
-
     size = { 'rows' : len(averaged_horizontal_lines1)-1,
             'cols' : len(averaged_vertical_lines1)-1,
             }
@@ -745,9 +743,9 @@ def extract_grid(image):
     return dict
 
 if __name__ == "__main__":
-    img = cv2.imread("C:\\Users\\upoud\\Desktop\\Major Project files\\opencv\\scanned8.png")
+    img = cv2.imread("C:\\Users\\upoud\\Desktop\\Major Project files\\opencv\\scanned8.jpg")
     across,down = get_text(img)
-    print(down)
+    print(across,down)
     # img = Image.open("chalena3.jpg")
     # img_gray = img.convert("L")
     # print(extract_grid(img_gray))

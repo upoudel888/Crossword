@@ -37,12 +37,15 @@
     flex-wrap: wrap;
     left: -2rem;
     z-index: 1;
+    color: var(--secondary-blue);
 }
+
+/* https://codepen.io/sosuke/pen/Pjoqqp */
 img.icon{
     width: 1.6rem;
     height: 1.6rem;
+    filter: invert(51%) sepia(39%) saturate(4395%) hue-rotate(202deg) brightness(100%) contrast(96%);
 }
-
 
 
 .form-container{
@@ -109,11 +112,13 @@ input[type=file]::file-selector-button {
     cursor: pointer;
   }
   
-  .drop-container:hover {
+  .drop-container:hover,
+  .drop-container.drag-active {
     background: #e9effd;
   }
   
-  .drop-container:hover .drop-title {
+  .drop-container:hover .drop-title,
+  .drop-container.drag-active .drop-title{
     color: #222;
   }
   
