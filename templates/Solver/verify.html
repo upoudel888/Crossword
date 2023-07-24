@@ -5,6 +5,10 @@
     <link rel="stylesheet" href= {%static "css/verify.css" %}>
 {% endblock css %}
 
+{% block script %}
+    <script src= {%static "js/modify-grid.js"%} defer></script>
+{% endblock script %}
+
 {% block hero %}
     <div class="validate-msg">
         <div class="special-note">
@@ -19,12 +23,16 @@
     </div>
 
     <div class="crossword">
-        <div class="grid">
-            {% for row_data in grid_rows %}
-                <div class="grid-row" style = "width: calc( 25rem / {{grid_rows|length}}rem);" >
+        <div class="grid-and-options">
+            <div class="grid">
+                {% for row_data in grid_rows %}
+                <div class="grid-row">
                     {% for num,data in row_data %}
                         {% if data == "." %}
-                            <div class="grid-cell dead-cell"></div>
+                        <div class="grid-cell dead-cell">
+                            <div class="cell-num"></div>
+                            <div class="cell-data"></div>
+                        </div>
                         {% else %}
                             <div class="grid-cell">
                                 <div class="cell-num">
@@ -34,21 +42,27 @@
                             </div>
                         {% endif %}
                     {% endfor %}
-                </div>
-            
-            {% endfor %}
+                </div>     
+                {% endfor %}
+            </div>
+    
+            <div class="grid-change-options">
+                <div class="decrease-button"><div>_</div></div>
+                <div class="dimension-info">21 X 21</div>
+                <div class="increase-button">+</div>
+            </div>
         </div>
         <div class="clues">
             <div class="across-clues">
-                <div class="clue-head-title"> Across </div>
+                <div class="clue-head-title" > Across </div>
                 {% for clue in across_clues %}
-                    <span class="across-clue"> {{clue|safe}}</span>
+                    <span class="across-clue" contenteditable> {{clue|safe}}</span>
                 {% endfor %}
             </div>
             <div class="down-clues">
-                <div class="clue-head-title"> Down </div>
+                <div class="clue-head-title" > Down </div>
                 {% for clue in down_clues %}
-                    <span class="down-clue"> {{clue|safe}}</span>
+                    <span class="down-clue" contenteditable> {{clue|safe}}</span>
                 {% endfor %}
             </div>
         </div>

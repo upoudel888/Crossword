@@ -75,6 +75,49 @@
     
 }
 
+.grid-and-options{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+}
+
+.grid-change-options{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    font-size: var(--font-size-logo);
+}
+
+.decrease-button, .increase-button{
+    height: 2.5rem;
+    width: 2.5rem;
+    background-color: var(--secondary-blue);
+    font-size: 2.5rem;
+    line-height: 2.5rem;
+    text-align: center;
+    font-weight: bolder;
+    border-radius: 2px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease-in;
+}
+
+.decrease-button:hover, .increase-button:hover{
+    background-color: var(--secondary-blue-dark);
+    transform: scale(1.05);
+}
+
+.decrease-button div{
+    transform: translateY(-40%);
+}
+.dimension-info{
+    background-color: var(--secondary-blue-light);
+    padding: 0.5rem 1rem;
+}
 .grid{
     width: 30rem;
     height: 30rem;

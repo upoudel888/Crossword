@@ -5,9 +5,8 @@ from sklearn.linear_model import LinearRegression
 import pytesseract
 import re
 
-## Starting of the code 
-image_path = "try heree.jpg"
 pytesseract.pytesseract.tesseract_cmd = 'C:/Program Files/Tesseract-OCR/tesseract.exe'
+image_path = "try heree.jpg"
 
 def first_preprocessing(image):
     gray = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
@@ -58,68 +57,49 @@ def find_vertical_profile(image):
     vertical_profile = np.sum(binary, axis=0)
     return vertical_profile
 
-def find_valleys(projection_profile, min_valley_height, max_valley_width):
-    valleys = []
-    in_valley = False
-    start = 0
-    for i in range(len(projection_profile)):
-        if projection_profile[i] <= min_valley_height:
-            if not in_valley:
-                in_valley = True
-                start = i
-        else:
-            if in_valley:
-                in_valley = False
-                end = i - 1
-                if end - start <= max_valley_width:
-                    valleys.append((start, end))
-    return valleys
+def detect_steepest_changes(projection_profile, threshold=0.4, start_idx=0, min_valley_width=10, min_search_width=50):
+    differences = np.diff(projection_profile)
+    change_points = np.where(np.abs(differences) > threshold * np.max(np.abs(differences)))[0]
+    left_boundaries = []
+    right_boundaries = []
 
-def calculate_tab_stop_width(valleys):
-    widths = [end - start for start, end in valleys]
-    tab_stop_width = np.median(widths)
-    return tab_stop_width
+    for idx in change_points:
+        if idx <= start_idx:
+            continue
 
-def combine_tab_stops(image, valleys, tab_stop_width, margin_fraction=0.2):
-    combined_columns = []
-    for i in range(len(valleys)-1):
-        valley_start = valleys[i][0]
-        valley_end = valleys[i+1][1]
+        if idx - start_idx >= min_search_width:
+            decreasing_profile = projection_profile[idx:]
+            if np.any(decreasing_profile > 0):
+                right_boundary = idx + np.argmin(decreasing_profile)
+                right_boundaries.append(right_boundary)
+            else:
+                continue
+            valley_start = max(start_idx, idx - min_valley_width)
+            valley_start = valley_start-40
+            valley_end = min(idx + min_valley_width, len(projection_profile) - 1)
+            valley = valley_start + np.argmin(projection_profile[valley_start:valley_end])
+            left_boundaries.append(valley)
 
-        # Calculate the margin as a fraction of the valley width
-        margin = int((valley_end - valley_start) * margin_fraction)
+            break
 
-        start = max(0, valley_start - margin)
-        end = valley_end + margin
+    return left_boundaries, right_boundaries
 
-        combined_column = np.copy(image[:, start:end])
+def crop_text_columns(image, projection_profile, threshold=0.4):
+    start_idx = 0
+    text_columns = []
 
-        # Combine the tab stop region at the left
-        tab_stop_region = image[:, start:start + int(tab_stop_width)]
-        combined_column[:, :int(tab_stop_width)] = np.where(tab_stop_region > 0, tab_stop_region, combined_column[:, :int(tab_stop_width)])
+    while True:
+        left_boundaries, right_boundaries = detect_steepest_changes(projection_profile, threshold, start_idx)
+        if not left_boundaries or not right_boundaries:
+            break
+        left = left_boundaries[0]
+        right = right_boundaries[0]
+        text_column = image[:, left:right]
+        text_columns.append(text_column)
 
-        # Combine the tab stop region at the right
-        right_tab_stop_region = image[:, end - int(tab_stop_width):end]
-        combined_column[:, -int(tab_stop_width):] = np.where(right_tab_stop_region > 0, right_tab_stop_region, combined_column[:, -int(tab_stop_width):])
+        start_idx = right
 
-        combined_columns.append(combined_column)
-    return combined_columns
-
-def get_filtered_columns(combined_columns):
-    max_width = 0
-    for column in combined_columns:
-        width = column.shape[1]
-        if width > max_width:
-            max_width = width
-    filtered_columns = []
-    min_width_threshold = 0.7 * max_width
-
-# Filter out columns with less than 20% less width than the maximum width
-    for column in combined_columns:
-        width = column.shape[1]
-        if width >= min_width_threshold:
-            filtered_columns.append(column)
-    return filtered_columns
+    return text_columns
 
 def parse_crossword_clues(text):
     text = text.lower()
@@ -141,6 +121,8 @@ def parse_crossword_clues(text):
             if match:
                 number = float(match.group(1))  # Convert the matched number to float if there is a decimal point
                 clues[number] = match.group(2).strip()
+            elif number is not None:
+                clues[number] += " " + line.strip()  # Append to the previous clue if it's a multiline clue
         return clues
 
     across = parse_clues(across_clues)
@@ -163,14 +145,10 @@ def get_text(image):
     result1 = remove_head(result)
     result2 = second_preprocessing(result1)
     vertical_profile = find_vertical_profile(result2)
-    min_valley_height = np.min(vertical_profile) + 0.1 * np.max(vertical_profile)
-    max_valley_width = 0.1 * len(vertical_profile)
-    valleys = find_valleys(vertical_profile, min_valley_height, max_valley_width)
-    tab_stop_width = calculate_tab_stop_width(valleys)
-    combined_columns = combine_tab_stops(result2, valleys,tab_stop_width)
-    filtered_columns = get_filtered_columns(combined_columns)
-    across,down = classify_text(filtered_columns)
+    combined_columns = crop_text_columns(result2,vertical_profile)
+    across,down = classify_text(combined_columns)
     return across,down
+
 
 ################################ Grid Extraction begins here ###########################
 ########################################################################################
