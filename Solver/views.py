@@ -1,6 +1,9 @@
 from django.shortcuts import render,HttpResponse,redirect
 import cv2
 import numpy as np
+import json
+import puz
+import tempfile
 from . import forms
 from .extractpuzzle import extract_grid,get_text
 
@@ -68,10 +71,88 @@ def solve(request):
 
             # Json File Uploaded
             elif crossword_file.content_type == 'application/json':
-                return HttpResponse('JSON file uploaded successfully.')
+
+                json_file = request.FILES.get("crossword_file")
+                if json_file is None:
+                    return redirect('/solver')
+                grid_data = json.loads(json_file.read())
+
+                # extracting grid rows
+                rows = []
+                no_of_rows = grid_data['size']['rows']
+                no_of_cols = grid_data['size']['cols']
+
+                for i in range(no_of_rows):
+                    temp = []
+                    for j in range(no_of_cols):
+                        temp.append((grid_data['gridnums'][i * no_of_cols + j], grid_data['grid'][i * no_of_cols + j]))
+                    rows.append(temp)
+                
+                # updating the session
+                request.session['grid_extraction_failed'] = False
+                request.session['grid-rows'] = rows
+                request.session['across_clues'] = grid_data['clues']['across']
+                request.session['down_clues'] = grid_data['clues']['down']
+
+                return redirect('Verify')
+                 
             # Puz file Uploaded
             elif crossword_file.content_type == 'application/octet-stream':
-                return HttpResponse('PUZ file uploaded successfully.')
+                puz_file = request.FILES.get("crossword_file")
+                if puz_file is None:
+                    return redirect('/solver')
+                
+                # Create a temporary file
+                with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+                    temp_file.write(puz_file.read())
+                p = puz.read(temp_file.name)
+                numbering = p.clue_numbering()
+
+                grid = []
+                gridnum = []
+                for row_idx in range(p.height):
+                    cell = row_idx * p.width
+                    row_solution = p.solution[cell:cell + p.width]
+                    for col_index, item in enumerate(row_solution):
+                        if p.solution[cell + col_index: cell + col_index + 1] == '.':
+                            grid.append(".")
+                            gridnum.append(0)
+                        else:
+                            grid.append(row_solution[col_index: col_index + 1])
+                            gridnum.append(0)
+                            
+                across_clues = []
+                for clue in numbering.across:
+                    answer = str(clue['num']) + ". " + clue['clue']
+                    across_clues.append(answer)
+                    gridnum[int(clue['cell'])] = clue['num']
+
+                down_clues = []
+                for clue in numbering.down:
+                    answer = str(clue['num']) + ". " + clue['clue']
+                    down_clues.append(answer)
+                    gridnum[int(clue['cell'])] = clue['num']
+
+                grid_data = {'size': { 'rows': p.height, 'cols': p.width}, 'clues': {'across': across_clues, 'down': down_clues}, 'grid': grid,'gridnums':gridnum}
+
+                # extracting grid rows
+                rows = []
+                no_of_rows = grid_data['size']['rows']
+                no_of_cols = grid_data['size']['cols']
+
+                for i in range(no_of_rows):
+                    temp = []
+                    for j in range(no_of_cols):
+                        temp.append((grid_data['gridnums'][i * no_of_cols + j], grid_data['grid'][i * no_of_cols + j]))
+                    rows.append(temp)
+                
+                # updating the session
+                request.session['grid_extraction_failed'] = False
+                request.session['grid-rows'] = rows
+                request.session['across_clues'] = grid_data['clues']['across']
+                request.session['down_clues'] = grid_data['clues']['down']
+
+                return redirect('Verify')
             else:
                 return HttpResponse('Invalid file format.')
                    

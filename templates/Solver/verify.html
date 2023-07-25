@@ -38,7 +38,8 @@
                                 <div class="cell-num">
                                     {% if num != 0 %} {{num}}{% endif %}
                                 </div>
-                                <div class="cell-data"> {{data}}</div>
+                                {% comment %} <div class="cell-data"> {{data}}</div> {% endcomment %}
+                                <div class="cell-data"></div>
                             </div>
                         {% endif %}
                     {% endfor %}
