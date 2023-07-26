@@ -134,7 +134,8 @@ def solve(request):
                     gridnum[int(clue['cell'])] = clue['num']
 
                 grid_data = {'size': { 'rows': p.height, 'cols': p.width}, 'clues': {'across': across_clues, 'down': down_clues}, 'grid': grid,'gridnums':gridnum}
-
+                
+                print(grid_data)
                 # extracting grid rows
                 rows = []
                 no_of_rows = grid_data['size']['rows']
