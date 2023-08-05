@@ -18,11 +18,15 @@ def solve(request):
         return render(request,"Solver/solver.html",context=context)
     
     if( request.method == "POST"):
+        # clearing out the session
+        request.session.clear()
+
         crossword_file = request.FILES['crossword_file']
 
         if crossword_file:
             # Image uploaded
             if crossword_file.content_type.startswith('image'):
+
                 # Save the image file or perform any necessary processing
                 # Get the image from the request
                 image = request.FILES.get('crossword_file')
@@ -34,8 +38,12 @@ def solve(request):
                 # Read the image using OpenCV
                 img_array = cv2.imdecode(np.frombuffer(image.read(), np.uint8), cv2.IMREAD_COLOR)
 
+                # trying to extract grid
                 try:
                     grid_data = extract_grid(img_array)
+
+                    print(grid_data['across_nums'])
+                    print(grid_data['down_nums'])
 
                     rows = []
                     no_of_rows = grid_data['size']['rows']
@@ -44,21 +52,43 @@ def solve(request):
                     for i in range(no_of_rows):
                         temp = []
                         for j in range(no_of_cols):
-                            temp.append((grid_data['gridnums'][i * no_of_cols + j], grid_data['grid'][i * no_of_cols + j]))
+                            temp.append((grid_data['gridnums'][i * no_of_cols + j], grid_data['grid'][i * no_of_cols + j])) # this might produce errors in case the size mismatch occurs
                         rows.append(temp)
-                
+                    
+                    # just initializing empty ones
+                    across_clues_dict = {}
+                    down_clues_dict = {}
+
+                    for i in grid_data['across_nums']:
+                        across_clues_dict[i] = ''
+                    for i in grid_data['down_nums']:
+                        down_clues_dict[i] = ''
+
+                    request.session['across_clues_dict'] =  across_clues_dict
+                    request.session['down_clues_dict'] =  down_clues_dict
+
                     request.session['grid_extraction_failed'] = False
                     request.session['grid-rows'] = rows
                 except Exception as e:
                     request.session['grid_extraction_failed'] = True
                     print("Grid Extraction thing failed:", e)
 
+                # trying to extract clues
                 try:
+                    across_clues_dict = request.session.get('across_clues_dict')
+                    down_clues_dict = request.session.get('down_clues_dict')
+
                     across, down = get_text(img_array)
                     request.session['clue_extraction_failed'] = False
 
-                    across_clues = [str(int(key)) + "   " + value for key, value in across.items()]
-                    down_clues = [str(int(key)) + "   " + value for key, value in down.items()]
+                    for key,value in across.items():
+                        across_clues_dict[int(key)] = value
+                    for key,value in down.items():
+                        down_clues_dict[int(key)] = value
+
+                    print(down)
+                    across_clues = [(key,value.strip(".").strip(" "))for key, value in across_clues_dict.items()]
+                    down_clues = [(key,value.strip(".").strip(" ")) for key, value in down_clues_dict.items()]
 
                     request.session['across_clues'] = across_clues
                     request.session['down_clues'] = down_clues
@@ -98,14 +128,15 @@ def solve(request):
                  
             # Puz file Uploaded
             elif crossword_file.content_type == 'application/octet-stream':
+                
                 puz_file = request.FILES.get("crossword_file")
                 if puz_file is None:
                     return redirect('/solver')
                 
-                # Create a temporary file
+                # Create a temporary file because puz.read takes file_name as an arguement
                 with tempfile.NamedTemporaryFile(delete=False) as temp_file:
                     temp_file.write(puz_file.read())
-                p = puz.read(temp_file.name)
+                p = puz.read(temp_file.name)    
                 numbering = p.clue_numbering()
 
                 grid = []
@@ -133,9 +164,9 @@ def solve(request):
                     down_clues.append(answer)
                     gridnum[int(clue['cell'])] = clue['num']
 
+                # final JSON format
                 grid_data = {'size': { 'rows': p.height, 'cols': p.width}, 'clues': {'across': across_clues, 'down': down_clues}, 'grid': grid,'gridnums':gridnum}
                 
-                print(grid_data)
                 # extracting grid rows
                 rows = []
                 no_of_rows = grid_data['size']['rows']
@@ -161,18 +192,26 @@ def solve(request):
 
 def verify(request):
 
+    # dictionary with keys 
+    # grid_rows = [(grid-num,grid-value)]
+    # across_clues = ["1. hello mello"]
+    # down_clues = ["1. hello wello"]
     context = {}
     
     if(request.method == "GET"):
+        # Extracting grid and clues from the session
         grid_rows = request.session.get("grid-rows")
         across_clues = request.session.get("across_clues")
         down_clues = request.session.get("down_clues")
 
+        # if clue extraction failed then don't show across and down clues
         if(request.session.get("clue_extraction_failed")):
-            across_clues = []
-            down_clues = []
+            across_clues = [(1,""),(16,""),(17,""),(18,""),(19,""),(20,""),(21,""),(22,""),(23,""),(24,""),(25,""),(26,""),(27,""),(28,""),(29,"")]
+            down_clues = [(1,""),(2,""),(3,""),(4,""),(5,""),(6,""),(7,""),(8,""),(9,""),(10,""),(11,""),(12,""),(13,""),(14,""),(15,"")]
+            
+        # if grid extraction fails then show a 15 * 15 grid
         if(request.session.get("grid_extraction_failed")):
-            nums = [[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],
+            nums = [[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],  # default grid to display
                     [16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,],
                     [17,0,0,0,0,0,0,0,0,0,0,0,0,0,0,],
                     [18,0,0,0,0,0,0,0,0,0,0,0,0,0,0,],
@@ -188,6 +227,7 @@ def verify(request):
                     [28,0,0,0,0,0,0,0,0,0,0,0,0,0,0,],
                     [29,0,0,0,0,0,0,0,0,0,0,0,0,0,0,],
                     ]
+            
             rows = []
             for i in range(15):
                 temp = []

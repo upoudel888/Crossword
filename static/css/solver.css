@@ -1,3 +1,10 @@
+.nav-links ul li:nth-child(n) a{
+    border-bottom: none;
+}
+.nav-links ul li:nth-child(2) a{
+    border-bottom: 3px solid black;
+}
+
 .get-started{
     display: flex;
     flex-direction: column;

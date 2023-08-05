@@ -56,14 +56,20 @@
         <div class="clues">
             <div class="across-clues">
                 <div class="clue-head-title" > Across </div>
-                {% for clue in across_clues %}
-                    <span class="across-clue" contenteditable> {{clue|safe}}</span>
-                {% endfor %}
-            </div>
-            <div class="down-clues">
-                <div class="clue-head-title" > Down </div>
-                {% for clue in down_clues %}
-                    <span class="down-clue" contenteditable> {{clue|safe}}</span>
+                {% for num,clue in across_clues %}
+                    <div class="across-clue across-clue-{{num}}">
+                        <span class="clue-num"> {{num}} </span>
+                        <span class="clue-text" contenteditable> {{clue|safe}} </span>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="down-clues">
+                    <div class="clue-head-title" > Down </div>
+                    {% for num,clue in down_clues %}
+                        <div class="down-clue down-clue-{{num}}">
+                            <div class="clue-num"> {{num}} </div>
+                            <div class="clue-text" contenteditable> {{clue|safe}} </div>
+                        </div>
                 {% endfor %}
             </div>
         </div>

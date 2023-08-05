@@ -5,7 +5,7 @@ from sklearn.linear_model import LinearRegression
 import pytesseract
 import re
 
-pytesseract.pytesseract.tesseract_cmd = 'C:/Program Files/Tesseract-OCR/tesseract.exe'
+pytesseract.pytesseract.tesseract_cmd = 'C:/Program Files (x86)/Tesseract-OCR/tesseract.exe'
 image_path = "try heree.jpg"
 
 def first_preprocessing(image):
@@ -601,6 +601,8 @@ def extract_grid(image):
     # finding out the grid corner
     grid = []
     grid_nums = []
+    across_clue_num = []
+    down_clue_num = []
 
     sorted_corners = np.array(list(sorted(harris_corners,key=lambda x:x[1])))
     if(len(sorted_corners) == len(averaged_horizontal_lines1) * len(averaged_vertical_lines1)):
@@ -622,12 +624,15 @@ def extract_grid(image):
             grid_formatted.append(grid[i:i + len(averaged_vertical_lines1) - 1])
         
 
+        # if (x,y) is present in these array the cell (x,y) is already accounted as a part of answer of across or down
         in_horizontal = []
         in_vertical = []
+        
         num = 0
 
         for x in range(0, len(averaged_vertical_lines1) - 1):
             for y in range(0, len(averaged_horizontal_lines1) - 1):
+
                 # if the cell is black there's no need to number
                 if grid_formatted[x][y] == '.':
                     grid_nums.append(0)
@@ -641,6 +646,7 @@ def extract_grid(image):
                 if horizontal_presence and vertical_presence:
                     grid_nums.append(0)
                     continue
+
                 # present in one i.e 1 0
                 if not horizontal_presence and vertical_presence:
                     horizontal_length = 0
@@ -653,6 +659,7 @@ def extract_grid(image):
                     if horizontal_length > 1:
                         in_horizontal.extend(temp_horizontal_arr)
                         num += 1
+                        across_clue_num.append(num)
                         grid_nums.append(num)
                         continue
                     grid_nums.append(0)
@@ -669,6 +676,7 @@ def extract_grid(image):
                     if vertical_length > 1:
                         in_vertical.extend(temp_vertical_arr)
                         num += 1
+                        down_clue_num.append(num)
                         grid_nums.append(num)
                         continue
                     grid_nums.append(0)
@@ -696,18 +704,21 @@ def extract_grid(image):
                         in_horizontal.extend(temp_horizontal_arr)
                         in_vertical.extend(temp_vertical_arr)
                         num += 1
+                        across_clue_num.append(num)
+                        down_clue_num.append(num)
                         grid_nums.append(num)
                     elif vertical_length > 1:
                         in_vertical.extend(temp_vertical_arr)
                         num += 1
+                        down_clue_num.append(num)
                         grid_nums.append(num)
                     elif horizontal_length > 1:
                         in_horizontal.extend(temp_horizontal_arr)
                         num += 1
+                        across_clue_num.append(num)
                         grid_nums.append(num)
                     else:
                         grid_nums.append(0)
-                
 
 
     size = { 'rows' : len(averaged_horizontal_lines1)-1,
@@ -717,14 +728,16 @@ def extract_grid(image):
     dict = {
         'size' : size,
         'grid' : grid,
-        'gridnums': grid_nums
+        'gridnums': grid_nums,
+        'across_nums': down_clue_num,
+        'down_nums' : across_clue_num
     }
     
     return dict
 
 if __name__ == "__main__":
-    img = cv2.imread("C:\\Users\\upoud\\Desktop\\Major Project files\\opencv\\scanned8.png")
-    across,down = get_text(img)
+    img = cv2.imread("D:\\D\\Major Project files\\opencv\\scanned8.png")
+    down = extract_grid(img)
     print(down)
     # img = Image.open("chalena3.jpg")
     # img_gray = img.convert("L")

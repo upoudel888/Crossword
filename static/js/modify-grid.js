@@ -23,23 +23,42 @@ class Grid{
         this.cells.forEach((cell,index)=>{
             cell.addEventListener('click',()=>{
 
-                // toggling the class and updating this.grid
+                // original clicked position
+                let click_x = Math.floor(index / this.dimension);
+                let click_y = index % this.dimension;
+
+                // mirror position
+                let click_x1 = ( this.dimension - 1  ) - click_x;
+                let click_y1 = ( this.dimension - 1 ) - click_y;
+
+                // toggling the class and updating this.grid for original position
                 cell.classList.toggle("dead-cell");
                 if(cell.classList.contains("dead-cell")){
-                    this.grid[Math.floor(index / this.dimension)][index % this.dimension] = '.'
+                    this.grid[click_x][click_y] = '.';
                 }else{
-                    this.grid[Math.floor(index / this.dimension)][index % this.dimension] = ' '
+                    this.grid[click_x][click_y] = ' ';
                 }
-                console.log(this.grid)
+
+                // toggling the class and updating this.grid for mirror position
+                if( !( click_x === click_y && click_x === Math.floor(this.dimension / 2))){
+                    let cell_mirror = this.cells[click_x1 * this.dimension + click_y1]
+                    cell_mirror.classList.toggle("dead-cell");
+                    if(cell_mirror.classList.contains("dead-cell")){
+                        this.grid[click_x1][click_y1] = '.';
+                    }else{
+                        this.grid[click_x1][click_y1] = ' ';
+                    }
+                }
+
                 // computing new grid nums
                 this.computeGridNum();
-                console.log(JSON.stringify(this.grid_nums))
                 // updating the dom
                 this.assignNewNumbers();
             });
         })
     }
 
+    // change the ui with the updated grid numbers
     assignNewNumbers(){
         for(let idx in this.grid_nums){
             if(this.grid_nums[idx] === 0){
@@ -75,7 +94,7 @@ class Grid{
         return arr;
     }
 
-    // computes the grid num from using the grid colors
+    // computes the grid num from using the grid colors ( it uses this.grid to see the colors )
     // returns an array
     computeGridNum() {
 

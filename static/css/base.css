@@ -17,8 +17,6 @@
     --secondary-pink:#ff928f;
     --secondary-pink-dark:#e1473d;
 
-
-
     --breakpoint-lg: 992px;
     --breakpoint-md: 768px;
     --breakpoint-sm: 576px;
@@ -102,7 +100,7 @@ nav{
     font-weight: 500;
     transition: 0.3s ease-in-out;
 }
-.nav-links ul a.active{
+.nav-links ul li:nth-child(1) a{
     border-bottom: 3px solid black;
 }
 .nav-links ul a:hover{
