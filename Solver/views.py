@@ -81,6 +81,8 @@ def solve(request):
                     across, down = get_text(img_array)
                     request.session['clue_extraction_failed'] = False
 
+                    print(across,down)
+
                     for key,value in across.items():
                         across_clues_dict[int(key)] = value
                     for key,value in down.items():
@@ -118,11 +120,18 @@ def solve(request):
                         temp.append((grid_data['gridnums'][i * no_of_cols + j], grid_data['grid'][i * no_of_cols + j]))
                     rows.append(temp)
                 
+                def separate_num_clues(clue):
+                    arr = clue.split(".")
+                    return (arr[0],"".join(arr[1:]))
+                
+                across_clues_num = [separate_num_clues(i) for i in grid_data['clues']['across']]
+                down_clues_num = [separate_num_clues(i) for i in grid_data['clues']['down']]
+                
                 # updating the session
                 request.session['grid_extraction_failed'] = False
                 request.session['grid-rows'] = rows
-                request.session['across_clues'] = grid_data['clues']['across']
-                request.session['down_clues'] = grid_data['clues']['down']
+                request.session['across_clues'] = across_clues_num
+                request.session['down_clues'] = down_clues_num
 
                 return redirect('Verify')
                  
@@ -178,11 +187,19 @@ def solve(request):
                         temp.append((grid_data['gridnums'][i * no_of_cols + j], grid_data['grid'][i * no_of_cols + j]))
                     rows.append(temp)
                 
+                # separating to [(num,clues)] format
+                def separate_num_clues(clue):
+                    arr = clue.split(".")
+                    return (arr[0],"".join(arr[1:]))
+                
+                across_clues_num = [separate_num_clues(i) for i in grid_data['clues']['across']]
+                down_clues_num = [separate_num_clues(i) for i in grid_data['clues']['down']]
+                
                 # updating the session
                 request.session['grid_extraction_failed'] = False
                 request.session['grid-rows'] = rows
-                request.session['across_clues'] = grid_data['clues']['across']
-                request.session['down_clues'] = grid_data['clues']['down']
+                request.session['across_clues'] = across_clues_num
+                request.session['down_clues'] = down_clues_num
 
                 return redirect('Verify')
             else:

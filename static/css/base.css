@@ -23,6 +23,7 @@
     
 }
 
+
 li{
     list-style-type: none;
     text-decoration: none;
@@ -37,7 +38,6 @@ a{
     padding: 0;
     box-sizing: border-box;
     /* background-color: rgba(0,100,0,0.1) !important; */
-    font-family: 'Lora', serif;
 }
 body{
     display: flex;
@@ -45,6 +45,11 @@ body{
     justify-content: space-between;
     min-height: 100vh;
 }
+
+ *:not(i){
+    font-family: 'Lora', serif;
+ }
+
 nav{
    height: 4rem;
    display: flex; 

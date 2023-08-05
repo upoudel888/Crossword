@@ -22,6 +22,7 @@
         </span> 
     </div>
 
+
     <div class="crossword">
         <div class="grid-and-options">
             <div class="grid">
@@ -48,9 +49,16 @@
             </div>
     
             <div class="grid-change-options">
-                <div class="decrease-button"><div>_</div></div>
-                <div class="dimension-info">15 X 15</div>
-                <div class="increase-button">+</div>
+                <div class="change-option">
+                    <div class="btn decrease-button"><i class="fa-solid fa-minus"></i></div>
+                    <div class="dim-info button-info">{{grid_rows|length}} X {{grid_rows|length}}</div>
+                    <div class="btn increase-button"><i class="fa-solid fa-plus"></i></div>   
+                </div>
+                <div class="change-option">
+                    <div class="btn rot-left-button"><i class="fa-solid fa-rotate-left"></i></div>
+                    <div class="rot-info button-info">Rotate 90&deg;</div>
+                    <div class="btn rot-right-button"><i class="fa-solid fa-rotate-right"></i></div>   
+                </div>
             </div>
         </div>
         <div class="clues">
@@ -58,8 +66,8 @@
                 <div class="clue-head-title" > Across </div>
                 {% for num,clue in across_clues %}
                     <div class="across-clue across-clue-{{num}}">
-                        <span class="clue-num"> {{num}} </span>
-                        <span class="clue-text" contenteditable> {{clue|safe}} </span>
+                        <div class="clue-num"> {{num}} </div>
+                        <div class="clue-text" contenteditable> {{clue|safe}} </div>
                     </div>
                     {% endfor %}
                 </div>
