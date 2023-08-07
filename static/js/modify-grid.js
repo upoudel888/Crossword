@@ -1,3 +1,5 @@
+// I don't know why I made a class tho ( prastichin JS XD )
+
 class Grid{
 
     constructor(){
@@ -6,11 +8,12 @@ class Grid{
         this.increaseButton = document.querySelector(".increase-button");
         this.rotateLeftButton = document.querySelector(".rot-left-button");
         this.rotateRightButton = document.querySelector(".rot-right-button");
+    
 
         // variables
         this.dimension = document.querySelectorAll(".grid-row").length;
         this.grid = []          // array of arrays
-        this.grid_nums = []     // array
+        this.grid_nums = []     // array of cell numbers starting from top to bottom left to right
         this.across_nums = []   // array
         this.down_nums = []     // array
 
@@ -22,37 +25,31 @@ class Grid{
 
     initialize() {
         // DOM elements 
-        this.cells = document.querySelectorAll(".grid-cell");         // they change when user makes some grid changes
-        this.cellNums = document.querySelectorAll(".cell-num");
-        this.grid_rows = document.querySelectorAll(".grid-row");
         this.parent = document.querySelector(".grid");
+
+        // they change when user makes some grid changes
+        this.grid_rows = document.querySelectorAll(".grid-row");      // changes are made when user increases or decreases grid dimensions
+        this.cells = document.querySelectorAll(".grid-cell");         // changes are made when user rotates the grid  
+        this.cellNums = document.querySelectorAll(".cell-num");       // used while assigning new numbers to the cells
         
-        this.downClues =  document.querySelectorAll(".down-clue");    // the don't
+        // they are used for extracting clues from the dom
+        this.downClues =  document.querySelectorAll(".down-clue");    
         this.acrossClues = document.querySelectorAll(".across-clue");
-        this.dimensionInfo = document.querySelectorAll(".dim-info");
+        this.dimensionInfo = document.querySelector(".dim-info");
 
         // "" means white cell and "." mean black cell in this.grid
         this.grid = this.getGrid();      // uses this.cells to compute the cell number                  
         this.computeGridNum();           // computes this.grid_nums, this.across_nums and this.down_nums using this.grid
         this.getCluesWithNums();         // computes this.acrossCluesWithNums and this.downCluesWithNums
         this.addCellEventListener();     // Adds click event listener to the grid cells
-        this.addButtonEventListener()
+        this.addButtonEventListener();
 
         this.assignNewClues();
+
     }
 
-    reinitializeAfterUpdate(){
-
-        this.cells = document.querySelectorAll(".grid-cell");
-        this.cellNums = document.querySelectorAll(".cell-num");
-        this.grid_rows = document.querySelectorAll(".grid-row")
-        this.parent = document.querySelector(".grid");
-        
-        this.grid = this.getGrid();
-        this.computeGridNum();
-        this.getCluesWithNums();
-        this.addCellEventListener();
-        this.assignNewClues();
+    updateDimensionInfo(){
+        this.dimensionInfo.innerText = `${this.dimension} X ${this.dimension}`;
     }
 
     // get across and down clues from the dom
@@ -64,6 +61,27 @@ class Grid{
         for(let elem of this.downClues){
             this.downCluesWithNums[elem.firstElementChild.innerText] = elem.lastElementChild.innerText;
         }
+    }
+
+    
+
+    // when user clicks button to change the grid
+    // changes are made to either this.grid_rows or this.cells to reflect to the dom
+    // then querySelection is done to update the remaining variables using reinitialize after update
+    reinitializeAfterUpdate(){
+
+        this.cells = document.querySelectorAll(".grid-cell");
+        this.cellNums = document.querySelectorAll(".cell-num");
+        this.grid_rows = document.querySelectorAll(".grid-row")
+        
+        this.grid = this.getGrid();
+        
+        this.computeGridNum();  // compute grid number
+        this.assignNewNumbers();
+        
+        this.getCluesWithNums();
+        this.addCellEventListener();
+        this.assignNewClues();
     }
 
     createCell(){
@@ -85,7 +103,7 @@ class Grid{
       
         return gridCellDiv;
     }
-
+    
     createRow(rowArr){
         const gridRowDiv = document.createElement('div');
         gridRowDiv.classList.add("grid-row");
@@ -97,52 +115,85 @@ class Grid{
     }
 
     increaseGrid() {
-        // Add a empty cell (" ") to each existing row
-        for (let i = 0; i < this.dimension; i++) {
-          this.grid[i].push(" "); //updating this.grid
-          this.grid_rows[i].appendChild(this.createCell()); //updating dom
+        if (this.dimension < 30){
+            // change in cell position causes the event listener to operate on different mirror cell
+            // so we remove it
+            // we add it later using from this.reinitializeAfterUpdate() method
+            this.removeCellEventListener();
+            // Add a empty cell (" ") to each existing row
+            for (let i = 0; i < this.dimension; i++) {
+              this.grid_rows[i].appendChild(this.createCell()); //updating dom
+            }
+            // Add a new row filled with empty cell at the end
+            const newRow = Array(this.dimension + 1).fill(" ");
+            this.parent.appendChild(this.createRow(newRow)); // updating dom
+    
+            this.dimension++;
+            this.reinitializeAfterUpdate();  
+            this.updateDimensionInfo();
         }
-        // Add a new row filled with empty cell at the end
-        const newRow = Array(this.dimension + 1).fill(" ");
-        this.grid.push(newRow); // updating this.grid
-        this.parent.appendChild(this.createRow(newRow)); // updating dom
-
-        this.dimension++;
-
-        this.reinitializeAfterUpdate();
-        this.assignNewNumbers();
     }
 
     decreaseGrid() {
-        if (this.dimension > 1) {
-          // Remove the last row
-          this.grid.pop();
-          this.parent.removeChild(this.parent.lastChild);
-          // Remove the last character from each remaining row
-          for (let i = 0; i < this.dimension - 1; i++) {
-            this.grid[i].pop();
-            this.grid_rows[i].removeChild(this.grid_rows[i].lastChild);
-          }
-          this.dimension--;
-          this.reinitializeAfterUpdate();
-          this.assignNewNumbers();
+        if (this.dimension > 5) {
+            this.removeCellEventListener();
+            // Remove the last row 
+            this.parent.removeChild(this.parent.lastElementChild); // updating dom
+            // Remove the last cell from each remaining row
+            for (let i = 0; i < this.dimension - 1; i++) {
+                this.grid_rows[i].removeChild(this.grid_rows[i].lastElementChild); // updating dom
+            }
+            this.dimension--;
+            this.reinitializeAfterUpdate();
+            this.assignNewNumbers();
+            this.updateDimensionInfo();
         }
+    }
+
+    rotateGrid(clockwise=false){
+
+        let rotatedTempGrid = [];
+        for( let i = 0 ; i < this.dimension; i++){
+            rotatedTempGrid.push([]);
+            for(let j = this.dimension-1; j >= 0 ; j--){
+                rotatedTempGrid[i].push(this.cells[ (this.dimension-1-j) * this.dimension + i]);
+            }
+        }
+
+        if(clockwise){
+            rotatedTempGrid.forEach(row => row.reverse());
+        }else{
+            rotatedTempGrid.reverse();
+        }
+
+        for( let i = 0 ; i < this.dimension; i++){
+            for(let j = 0; j < this.dimension ; j++){
+                this.cells[i*this.dimension+j].replaceWith(rotatedTempGrid[i][j].cloneNode(true)); // replace with new cells having no new event listeners
+            }
+        }
+
+        this.reinitializeAfterUpdate();
+
     }
 
     addButtonEventListener(){
         this.decreaseButton.addEventListener('click',()=>{
             this.decreaseGrid();
-            console.log(JSON.stringify(this.grid));
-        })
+        });
         
         this.increaseButton.addEventListener('click',()=>{
             this.increaseGrid();
-            console.log(JSON.stringify(this.grid));
-        })
+        });
 
+        this.rotateLeftButton.addEventListener("click",()=>{
+            this.rotateGrid(false);
+        });
+        this.rotateRightButton.addEventListener("click",()=>{
+            this.rotateGrid(true);
+        });
     }
 
-    eventListenerFunction(cell,index){
+    handleCellClick(cell,index){
         // original clicked position
         let click_x = Math.floor(index / this.dimension);
         let click_y = index % this.dimension;
@@ -161,9 +212,19 @@ class Grid{
 
         // toggling the class and updating this.grid for mirror position
         if( !( click_x === click_y && click_x === Math.floor(this.dimension / 2))){
-            let cell_mirror = this.cells[click_x1 * this.dimension + click_y1]
-            cell_mirror.classList.toggle("dead-cell");
-            if(cell_mirror.classList.contains("dead-cell")){
+            let cell_mirror = this.cells[click_x1 * this.dimension + click_y1];
+
+            if(cell.classList.contains("dead-cell")){                   // toggle if original is dead cell and mirror is not
+                if( ! cell_mirror.classList.contains("dead-cell")){
+                    cell_mirror.classList.toggle("dead-cell");
+                }
+            }else{
+                if(cell_mirror.classList.contains("dead-cell")){        // toggle if original is not dead cell and the mirror is
+                    cell_mirror.classList.toggle("dead-cell");
+                }
+            }
+
+            if(cell_mirror.classList.contains("dead-cell")){            // updating this.grid
                 this.grid[click_x1][click_y1] = '.';
             }else{
                 this.grid[click_x1][click_y1] = ' ';
@@ -178,17 +239,19 @@ class Grid{
         this.assignNewClues();
     }
     
-    // if clicked => toogle class => upadate this.grid => update this.grid_nums => update the dom
+
+    // if clicked => toogle class => update this.cell => this.grid => update this.grid_nums => update the dom for grid nums
+    
     addCellEventListener(){
         this.cells.forEach((cell,index)=>{
-            cell.addEventListener('click',()=>{this.eventListenerFunction(cell,index)});
-        })
+            cell.addEventListener('click',()=>{this.handleCellClick(cell,index)});
+        });
     }
 
     removeCellEventListener(){
-        this.cells.forEach((cell,index)=>{
-            cell.removeEventListener('click',()=>{this.eventListenerFunction(cell,index)});
-        })
+        this.cells.forEach((cell)=>{
+            cell.replaceWith(cell.cloneNode(true));
+        });
     }
 
     // change the UI with the updated grid numbers
