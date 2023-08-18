@@ -134,7 +134,7 @@
     font-size: 1.7rem;
 }
 
-.change-option .btn{
+.grid-change-options .btn{
     height: 2rem;
     width: 2rem;
     background-color: var(--secondary-blue);
@@ -148,8 +148,16 @@
     line-height: 2rem;
 }
 
-.decrease-button:hover, .increase-button:hover{
+.grid-change-options .btn.erase-button{
+    background-color: var(--secondary-pink-dark);
+}
+
+.grid-change-options .btn:hover{
     background-color: var(--secondary-blue-dark);
+    transform: scale(1.05);
+}
+.grid-change-options .btn.erase-button:hover{
+    background-color: var(--secondary-pink-dark);
     transform: scale(1.05);
 }
 
