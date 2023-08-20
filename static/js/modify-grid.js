@@ -4,11 +4,12 @@ class Grid{
 
     constructor(){
         // buttons
+        this.proceedButton = document.querySelector(".proceed-button");
         this.decreaseButton = document.querySelector(".decrease-button");
         this.increaseButton = document.querySelector(".increase-button");
         this.rotateLeftButton = document.querySelector(".rot-left-button");
         this.rotateRightButton = document.querySelector(".rot-right-button");
-    
+        this.eraseButton = document.querySelector(".erase-button");
 
         // variables
         this.dimension = document.querySelectorAll(".grid-row").length;
@@ -19,6 +20,7 @@ class Grid{
 
         this.acrossCluesWithNums = {} // the clue and clue number extracted from the dom
         this.downCluesWithNums = {}   // these variables do not change
+
 
         this.initialize();
     }
@@ -45,6 +47,9 @@ class Grid{
         this.addButtonEventListener();
 
         this.assignNewClues();
+
+        console.log(JSON.stringify(this.acrossCluesWithNums));
+        console.log(JSON.stringify(this.downCluesWithNums));
 
     }
 
@@ -82,6 +87,42 @@ class Grid{
         this.getCluesWithNums();
         this.addCellEventListener();
         this.assignNewClues();
+    }
+
+    
+    makeSolveRequest(){
+        const hero = document.querySelector(".hero");
+        hero.classList.toggle("overlay");
+        fetch('/solver/solve/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                // You might need other headers like CSRF token, authentication, etc.
+            },
+            body: JSON.stringify(this.acrossCluesWithNums)
+        })
+        .then( response => {
+            if (response.ok) {
+                if (response.redirected) {
+                    // If the response is a redirect, you can get the redirect URL from the response headers
+                    const redirectURL = response.url;
+                    
+                    hero.classList.toggle("overlay");
+                    // Perform the redirect using JavaScript
+                    window.location.href = redirectURL;
+                }
+            }
+        }
+        )  // Extract the response text
+        .then(data => {
+            // Display the response from the server
+            console.log(data);
+        })
+        .catch(error => {
+            // Handle errors here
+            console.error('Error:', error);
+        });
+
     }
 
     createCell(){
@@ -122,12 +163,20 @@ class Grid{
             this.removeCellEventListener();
             // Add a empty cell (" ") to each existing row
             for (let i = 0; i < this.dimension; i++) {
-              this.grid_rows[i].appendChild(this.createCell()); //updating dom
+                if(this.dimension % 2 != 0){
+                    this.grid_rows[i].appendChild(this.createCell()); //updating dom
+                }else{
+                    this.grid_rows[i].prepend(this.createCell());
+                }
             }
-            // Add a new row filled with empty cell at the end
+            // Add a new row 
             const newRow = Array(this.dimension + 1).fill(" ");
-            this.parent.appendChild(this.createRow(newRow)); // updating dom
-    
+            if(this.dimension % 2 != 0){
+                this.parent.appendChild(this.createRow(newRow)); // updating dom
+            }else{
+                this.parent.prepend(this.createRow(newRow));    
+            }
+            
             this.dimension++;
             this.reinitializeAfterUpdate();  
             this.updateDimensionInfo();
@@ -137,12 +186,25 @@ class Grid{
     decreaseGrid() {
         if (this.dimension > 5) {
             this.removeCellEventListener();
-            // Remove the last row 
-            this.parent.removeChild(this.parent.lastElementChild); // updating dom
-            // Remove the last cell from each remaining row
-            for (let i = 0; i < this.dimension - 1; i++) {
-                this.grid_rows[i].removeChild(this.grid_rows[i].lastElementChild); // updating dom
+            if(this.dimension % 2 == 0){
+                // Remove the last row 
+                this.parent.removeChild(this.parent.lastElementChild); // updating dom
+            }else{
+                // Remove the first row 
+                this.parent.removeChild(this.parent.firstElementChild); // updating dom
             }
+
+            // Remove the last cell from each remaining row
+            for (let i = 0; i < this.dimension ; i++) {
+                if(this.dimension % 2 == 0){
+                    // Remove the last cell
+                    this.grid_rows[i].removeChild(this.grid_rows[i].lastElementChild); // updating dom
+                }else{
+                    // Remove the first cell 
+                    this.grid_rows[i].removeChild(this.grid_rows[i].firstElementChild); // updating dom
+                }
+            }
+
             this.dimension--;
             this.reinitializeAfterUpdate();
             this.assignNewNumbers();
@@ -176,7 +238,20 @@ class Grid{
 
     }
 
+    eraseGrid(){
+        // Remove the last cell from each remaining row
+        for (let i = 0; i < this.cells.length ; i++) {
+            this.cells[i].classList.remove("dead-cell");
+        };
+        this.removeCellEventListener();
+        this.reinitializeAfterUpdate();
+    }
+
     addButtonEventListener(){
+        this.proceedButton.addEventListener('click',()=>{
+            this.makeSolveRequest();
+        });
+
         this.decreaseButton.addEventListener('click',()=>{
             this.decreaseGrid();
         });
@@ -190,6 +265,9 @@ class Grid{
         });
         this.rotateRightButton.addEventListener("click",()=>{
             this.rotateGrid(true);
+        });
+        this.eraseButton.addEventListener("click",()=>{
+            this.eraseGrid();
         });
     }
 
@@ -230,6 +308,7 @@ class Grid{
                 this.grid[click_x1][click_y1] = ' ';
             }
         }
+        // updating this.cell
 
         // computing new grid nums
         this.computeGridNum();

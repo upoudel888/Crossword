@@ -5,23 +5,25 @@
     <link rel="stylesheet" href= {%static "css/verify.css" %}>
 {% endblock css %}
 
-{% block script %}
-    <script src= {%static "js/modify-grid.js"%} defer></script>
-{% endblock script %}
+{% block script %}{% endblock script %}
 
 {% block hero %}
-    <div class="validate-msg">
-        <div class="special-note">
-            <span class="emphasis-text"> Validation </span> <br> <br>
-            Please validate and correct the detections before proceeding to generate solution. <br><br>
-            <button class="custom-btn proceed-button btn-11">Proceed</button>
-        </div>
-        <span class="note"> <span class = 'bold'>Note : </span> 
-        Click on grid cells to toggle the color. <br>
-        Edit clues in the text area.
-        </span> 
-    </div>
     
+    <div class="validate-msg">
+
+            <div class="special-note">
+                <span class="emphasis-text">Evaluations</span> <br><br>
+                <span class = 'bold'>Letter Accuracy : {{ evalutions.correct_letters_percent|floatformat:"2" }}% </span>
+                ({{ evalutions.correct_letters }}/{{ evalutions.total_letters }}) <br>
+                <div class="dummy"></div>
+                <span class = 'bold'>Word Accuracy : {{ evalutions.correct_words_percent|floatformat:"2" }}% </span>
+                ({{ evalutions.correct_words }}/{{ evalutions.total_words }}) <br><br>
+                <a href={% url 'Solver' %}><button class="custom-btn proceed-button btn-11">Solve Next</button></a>
+        </div>
+    </div>
+
+
+
     <div class="crossword">
         <div class="grid-and-options">
             <div class="grid">
@@ -34,31 +36,16 @@
                             <div class="cell-data"></div>
                         </div>
                         {% else %}
-                            <div class="grid-cell" >
+                            <div class="grid-cell {% if data != sol %}wrong-cell{% endif %}" >
                                 <div class="cell-num">
                                     {% if num != 0 %} {{num}}{% endif %}
                                 </div>
-                                <div class="cell-data"></div>
+                                <div class="cell-data">{{sol}}</div>
                             </div>
                         {% endif %}
                     {% endfor %}
                 </div>     
                 {% endfor %}
-            </div>
-            
-            {% comment %} bouttons {% endcomment %}
-            <div class="grid-change-options">
-                <div class="change-option">
-                    <div class="btn decrease-button"><i class="fa-solid fa-minus"></i></div>
-                    <div class="dim-info button-info">{{grid_rows|length}} X {{grid_rows|length}}</div>
-                    <div class="btn increase-button"><i class="fa-solid fa-plus"></i></div>   
-                </div>
-                <div class="change-option">
-                    <div class="btn rot-left-button"><i class="fa-solid fa-rotate-left"></i></div>
-                    <div class="rot-info button-info">Rotate 90&deg;</div>
-                    <div class="btn rot-right-button"><i class="fa-solid fa-rotate-right"></i></div>   
-                </div>
-                <div class="btn erase-button"><i class="fa-sharp fa-solid fa-trash"></i></div>
             </div>
         </div>
         {% comment %} clues {% endcomment %}
@@ -68,7 +55,7 @@
                 {% for num,clue in across_clues %}
                     <div class="across-clue across-clue-{{num}}">
                         <div class="clue-num"> {{num}} </div>
-                        <div class="clue-text" contenteditable> {{clue|safe}} </div>
+                        <div class="clue-text"> {{clue|safe}} </div>
                     </div>
                     {% endfor %}
                 </div>
@@ -77,7 +64,7 @@
                     {% for num,clue in down_clues %}
                         <div class="down-clue down-clue-{{num}}">
                             <div class="clue-num"> {{num}} </div>
-                            <div class="clue-text" contenteditable> {{clue|safe}} </div>
+                            <div class="clue-text"> {{clue|safe}} </div>
                         </div>
                 {% endfor %}
             </div>

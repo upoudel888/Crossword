@@ -1,4 +1,5 @@
 from django.shortcuts import render,HttpResponse,redirect
+from django.views.decorators.csrf import csrf_exempt
 import cv2
 import numpy as np
 import json
@@ -6,16 +7,15 @@ import puz
 import tempfile
 from . import forms
 from .extractpuzzle import extract_grid,get_text
+from .Inference import solvePuzzle
 
 # from .extractpuzzle1 import extract_grid,get_tex
 # Create your views here.
 
 def solve(request):
-    context = {
-        'form' : forms.UserImagesForm()
-    }
+    context = { }
     if ( request.method == "GET"):
-        return render(request,"Solver/solver.html",context=context)
+        return render(request,"Solver/solver.html")
     
     if( request.method == "POST"):
         # clearing out the session
@@ -36,7 +36,7 @@ def solve(request):
                     return redirect('/solver')
 
                 # Read the image using OpenCV
-                img_array = cv2.imdecode(np.frombuffer(image.read(), np.uint8), cv2.IMREAD_COLOR)
+                img_array = cv2.imdecode(np.frombuffer(image.read(), np.uint8), cv2.IMREAD_GRAYSCALE)
 
                 # trying to extract grid
                 try:
@@ -109,6 +109,8 @@ def solve(request):
                     return redirect('/solver')
                 grid_data = json.loads(json_file.read())
 
+                request.session['json'] = grid_data
+
                 # extracting grid rows
                 rows = []
                 no_of_rows = grid_data['size']['rows']
@@ -117,7 +119,7 @@ def solve(request):
                 for i in range(no_of_rows):
                     temp = []
                     for j in range(no_of_cols):
-                        temp.append((grid_data['gridnums'][i * no_of_cols + j], grid_data['grid'][i * no_of_cols + j]))
+                        temp.append((grid_data['gridnums'][i * no_of_cols + j], grid_data['grid'][i * no_of_cols + j],0))
                     rows.append(temp)
                 
                 def separate_num_clues(clue):
@@ -207,6 +209,47 @@ def solve(request):
                    
     return render(request,"Solver/solver.html",context=context)
 
+@csrf_exempt
+def solve1(request):
+    context = {}
+    if( request.method == "POST"):
+        received_data = request.body.decode('utf-8')  # Decode the byte data to a string
+        print("Generating Solutions")
+        # Log the received data for debugging
+        solution,evaluations = solvePuzzle(request.session.get("json"))
+        # printing solution
+        print(solution)
+        print(evaluations)
+
+        request.session['solution'] = solution
+        request.session['evalutions'] = evaluations
+
+        # Return the received data in the response
+        return redirect("Solution")
+    
+def showSolution(request):
+    grid_rows = request.session.get("grid-rows")
+    across_clues = request.session.get("across_clues")
+    down_clues = request.session.get("down_clues")
+    solutions = request.session.get("solution")
+    evaluations = request.session.get('evalutions')
+
+
+    context = {}
+    for i in range(0,len(solutions)):
+        for j in range(0,len(grid_rows[i])):
+            grid_rows[i][j][2] = solutions[i][j] if solutions[i][j] != '' else " "
+
+
+    context['grid_rows'] = grid_rows # Array of arrays 1st array element contains cell data for 1st and 1st columnrow as [ {grid_num},{grid-value}] format
+    context['across_clues'] = across_clues
+    context['down_clues'] = down_clues
+    context['evalutions'] = evaluations
+
+    return render(request,"Solver/solutions.html",context=context)
+
+
+
 def verify(request):
 
     # dictionary with keys 
@@ -253,9 +296,10 @@ def verify(request):
                 rows.append(temp)
             grid_rows = rows
 
-
+        print(grid_rows)
         context['grid_rows'] = grid_rows # Array of arrays 1st array element contains cell data for 1st and 1st columnrow as [ {grid_num},{grid-value}] format
         context['across_clues'] = across_clues
         context['down_clues'] = down_clues
+        context['solutions'] = 0
 
         return render(request,"Solver/verify.html",context=context)

@@ -24,15 +24,19 @@ def getGrid(request):
         'Referer': 'https://www.xwordinfo.com/JSON/'
     }
     # mm/dd/yyyy
-    url = 'https://www.xwordinfo.com/JSON/Data.ashx?date=07/10/2023'
+    url = 'https://www.xwordinfo.com/JSON/Data.ashx?date=08/14/2023'
 
     response = requests.get(url, headers=headers)
 
     context = {}
+    grid_data = {}
     if response.status_code == 200:
         bytevalue = response.content
         jsonText = bytevalue.decode('utf-8').replace("'", '"')
         grid_data = json.loads(jsonText) 
+        save_file = open("savedata.json", "w")  
+        json.dump(grid_data, save_file, indent = 6)  
+        save_file.close()  
         context['data'] = grid_data
     else:
         print(f"Request failed with status code {response.status_code}.")
@@ -52,6 +56,9 @@ def getGrid(request):
     context['grid_rows'] = rows # Array of arrays 1st array element contains cell data for 1st and 1st columnrow as [ {grid_num},{grid-value}] format
     context['across_clues'] = grid_data['clues']['across']
     context['down_clues'] = grid_data['clues']['down']
+
+    print(grid_data['clues']['across'])
+    print(grid_data['clues']['down'])
 
 
     return render(request,'NYTgrid/NYTgrid.html', context=context)
