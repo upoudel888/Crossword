@@ -5,7 +5,7 @@ from sklearn.linear_model import LinearRegression
 import pytesseract
 import re
 
-pytesseract.pytesseract.tesseract_cmd = 'C:/Program Files (x86)/Tesseract-OCR/tesseract.exe'
+pytesseract.pytesseract.tesseract_cmd = 'C:/Program Files/Tesseract-OCR/tesseract.exe'
 image_path = "try heree.jpg"
 
 def first_preprocessing(image):
@@ -101,40 +101,66 @@ def crop_text_columns(image, projection_profile, threshold=0.4):
 
     return text_columns
 
-def parse_crossword_clues(text):
-    text = text.lower()
 
+def parse_clues(clue_text):
+    lines = clue_text.split('\n')
+    clues = {}
+    number = None
+    column = 0
+    for line in lines:
+        if "column separation" in line:
+            column += 1
+            continue
+        pattern = r"^(\d+(?:\.\d+)?)\s*(.+)"  # Updated pattern to handle decimal point numbers for clues
+        match = re.search(pattern, line)
+        if match:
+            number = float(match.group(1))  # Convert the matched number to float if there is a decimal point
+            if number not in clues:
+                clues[number] = match.group(2).strip()
+            else:
+                continue
+        elif number is None:
+            continue
+        elif clues[number][0] != column:
+            continue
+        else:
+            clues[number][1] += " " + line.strip()  # Append to the previous clue if it's a multiline clue
+
+    return clues
+
+def parse_crossword_clues(text):
     # Check if "Down" clues are present
-    if "down" in text:
-        across_clues, down_clues = re.split(r"\ndown\s*\n", text)
+    match = re.search(r'[dD][oO][wW][nN]\n', text)
+    if match:
+        across_clues, down_clues = re.split(r'[dD][oO][wW][nN]\n', text)
     else:
         # If "Down" clues are not present, set down_clues to an empty string
         across_clues, down_clues = text, ""
-
-    def parse_clues(clue_text):
-        lines = clue_text.split('\n')
-        clues = {}
-        number = None
-        for line in lines:
-            pattern = r"^(\d+(?:\.\d+)?)\s*(.+)"  # Updated pattern to handle decimal point numbers for clues
-            match = re.search(pattern, line)
-            if match:
-                number = float(match.group(1))  # Convert the matched number to float if there is a decimal point
-                clues[number] = match.group(2).strip()
-            elif number is not None:
-                clues[number] += " " + line.strip()  # Append to the previous clue if it's a multiline clue
-        return clues
 
     across = parse_clues(across_clues)
     down = parse_clues(down_clues)
 
     return across, down
 
+
 def classify_text(filtered_columns):
     text = ""
     custom_config = r'--oem 3 --psm 6'
-    for i, column in enumerate(filtered_columns):  # Tesseract OCR configuration
-        detected_text = pytesseract.image_to_string(column, config=custom_config)
+    for i, column in enumerate(filtered_columns):
+        column2 = cv2.cvtColor(column, cv2.COLOR_BGR2RGB)
+        scale_factor = 2.0  # You can adjust this value
+
+# Calculate the new dimensions after scaling
+        new_width = int(column2.shape[1] * scale_factor)
+        new_height = int(column2.shape[0] * scale_factor)
+
+# Resize the image using OpenCV
+        scaled_image = cv2.resize(column2, (new_width, new_height), interpolation=cv2.INTER_LINEAR)
+
+# Apply image enhancement techniques
+        denoised_image = cv2.fastNlMeansDenoising(scaled_image, None, h=10, templateWindowSize=7, searchWindowSize=21)
+        enhanced_image = cv2.cvtColor(denoised_image, cv2.COLOR_BGR2GRAY)  # Convert to grayscale  # Apply histogram equalization
+        detected_text = pytesseract.image_to_string(enhanced_image, config=custom_config)
     # print(detected_text)
         text+=detected_text
     across_clues, down_clues = parse_crossword_clues(text)
