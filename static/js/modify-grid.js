@@ -4,12 +4,12 @@ class Grid{
 
     constructor(){
         // buttons
+        this.proceedButton = document.querySelector(".proceed-button");
         this.decreaseButton = document.querySelector(".decrease-button");
         this.increaseButton = document.querySelector(".increase-button");
         this.rotateLeftButton = document.querySelector(".rot-left-button");
         this.rotateRightButton = document.querySelector(".rot-right-button");
         this.eraseButton = document.querySelector(".erase-button");
-    
 
         // variables
         this.dimension = document.querySelectorAll(".grid-row").length;
@@ -87,6 +87,42 @@ class Grid{
         this.getCluesWithNums();
         this.addCellEventListener();
         this.assignNewClues();
+    }
+
+    
+    makeSolveRequest(){
+        const hero = document.querySelector(".hero");
+        hero.classList.toggle("overlay");
+        fetch('/solver/solve/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                // You might need other headers like CSRF token, authentication, etc.
+            },
+            body: JSON.stringify(this.acrossCluesWithNums)
+        })
+        .then( response => {
+            if (response.ok) {
+                if (response.redirected) {
+                    // If the response is a redirect, you can get the redirect URL from the response headers
+                    const redirectURL = response.url;
+                    
+                    hero.classList.toggle("overlay");
+                    // Perform the redirect using JavaScript
+                    window.location.href = redirectURL;
+                }
+            }
+        }
+        )  // Extract the response text
+        .then(data => {
+            // Display the response from the server
+            console.log(data);
+        })
+        .catch(error => {
+            // Handle errors here
+            console.error('Error:', error);
+        });
+
     }
 
     createCell(){
@@ -212,6 +248,10 @@ class Grid{
     }
 
     addButtonEventListener(){
+        this.proceedButton.addEventListener('click',()=>{
+            this.makeSolveRequest();
+        });
+
         this.decreaseButton.addEventListener('click',()=>{
             this.decreaseGrid();
         });

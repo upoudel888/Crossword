@@ -4,6 +4,7 @@ import math
 from sklearn.linear_model import LinearRegression
 import pytesseract
 import re
+import matplotlib.pyplot as plt
 
 pytesseract.pytesseract.tesseract_cmd = 'C:/Program Files (x86)/Tesseract-OCR/tesseract.exe'
 image_path = "try heree.jpg"
@@ -141,6 +142,7 @@ def classify_text(filtered_columns):
     return across_clues,down_clues
 
 def get_text(image):
+    image = cv2.cvtColor(image,cv2.COLOR_GRAY2BGR)
     result = first_preprocessing(image)
     result1 = remove_head(result)
     result2 = second_preprocessing(result1)
@@ -362,12 +364,20 @@ def get_square_color(image, box):
 
 # accepts image in grayscale
 def extract_grid(image):
-    image = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
-    
-    # Applying canny edge detector
-    canny = cv2.Canny(image,75,25)
+
+    # Apply Gaussian blur to reduce noise and improve edge detection
+    blurred = cv2.GaussianBlur(image, (5, 5), 0)
+    # Apply Canny edge detection
+    edges = cv2.Canny(blurred, 50, 150)
+
+    # Apply dilation to connect nearby edges and make them more contiguous
+    kernel = np.ones((5, 5), np.uint8)
+    dilated = cv2.dilate(edges, kernel, iterations=1)
+
+    # # Applying canny edge detector
     # detecting contours on the canny image
-    contours, hierarchy3 = cv2.findContours(canny, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
+    contours, _ = cv2.findContours(dilated, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
+
     # sorting the contours by the descending order area of the contour
     sorted_contours = list(sorted(contours, key=cv2.contourArea,reverse=True))
     # filtering out the top 10 largest by applying NMS and only selecting square ones (Apsect ratio 1)
@@ -377,7 +387,6 @@ def extract_grid(image):
 
 
     # -- Cropping out the largest Contour and Masking Other regions --
-
 
     largest_contour = filtered_contours[0]
     # creating the mask for just the maximum contour
@@ -401,8 +410,6 @@ def extract_grid(image):
     xmin = max(0, min(xmin, masked_image.shape[1]))
     xmax = max(0, min(xmax, masked_image.shape[1]))
     cropped_image_main = masked_image[ymin:ymax, xmin:xmax]
-
-
 
     # -- Rotating the image if needed --
 
@@ -431,15 +438,15 @@ def extract_grid(image):
 
     cropped_image = cropped_image_main.copy() if not rotation_flag else rotated_roi
 
-
-
     # -- Performing Hough Transform --
 
     similarity_threshold = math.floor(h/40) # Thresholds for filtering Similar Hough Lines
     spacing_threshold = math.floor(h/30)
 
+    # Applying Gaussian Blur to reduce noice and improve dege detection
+    blurred = cv2.GaussianBlur(cropped_image, (5, 5), 0)
     # Perform Canny edge detection on the GrayScale Image
-    edges = cv2.Canny(cropped_image, 50, 150, apertureSize=3)
+    edges = cv2.Canny(blurred, 50, 150) 
     lines = cv2.HoughLines(edges, 1, np.pi/180, 200)
 
     # Filter out similar lines
@@ -486,11 +493,10 @@ def extract_grid(image):
             if x is not None and y is not None:
                 hough_corners.append((x, y))
 
-
     # -- Performing Harris Corner Detection --
 
     # Create CLAHE object with specified clip limit
-    clahe = cv2.createCLAHE(clipLimit=2, tileGridSize=(8, 8))
+    clahe = cv2.createCLAHE(clipLimit=3, tileGridSize=(8, 8))
     clahe_image = clahe.apply(cropped_image)
 
     # harris corner detection for CLHAE IMAGE
@@ -502,8 +508,12 @@ def extract_grid(image):
     criteria = (cv2.TERM_CRITERIA_EPS+cv2.TermCriteria_MAX_ITER,100,0.001)
     harris_corners = cv2.cornerSubPix(clahe_image,np.float32(centroids),(5,5),(-1,-1),criteria)
 
+    drawn_image = cv2.cvtColor(cropped_image, cv2.COLOR_GRAY2BGR)
+    for i in harris_corners:
+        x,y = i
+        image2 = cv2.circle(drawn_image, (int(x),int(y)), radius=0, color=(0, 0, 255), thickness=3)
 
-
+    cv2.imwrite("noice1.jpg",drawn_image)
     # -- Using Regression Model to approximate horizontal and vertical Lines
 
     # reducing to 0 decimal places
@@ -524,6 +534,7 @@ def extract_grid(image):
 
     actual_vertical_lines = fit_lines(vertical_lines)
     actual_horizontal_lines = fit_lines(horizontal_lines,is_horizontal=True)
+
 
     # Lines obtained from above method are not appropriate, we have to refine them
 
@@ -556,7 +567,6 @@ def extract_grid(image):
         w = cropped_image.shape[1]    
         cv2.line(drawn_image6, (int(cx-vx*w), int(cy-vy*w)), (int(cx+vx*w), int(cy+vy*w)), (0, 0, 255),1,cv2.LINE_AA)
 
-
     # -- Finding Intersection points -- 
     
     # Applying Harris Corner Detection to find the intersection points
@@ -571,7 +581,6 @@ def extract_grid(image):
     harris_corners = cv2.cornerSubPix(mesh_image,np.float32(centroids),(5,5),(-1,-1),criteria)
     drawn_image = cv2.cvtColor(drawn_image6, cv2.COLOR_GRAY2BGR)
     harris_corners = list(sorted(harris_corners[1:],key = lambda x : x[1]))
-
 
     # -- Finding out the grid color --
 
@@ -597,7 +606,6 @@ def extract_grid(image):
     # Apply morphological closing to further refine the restored image
     kernel_closing = np.ones((5, 5), np.uint8)
     refined_image = cv2.morphologyEx(opened_image, cv2.MORPH_CLOSE, kernel_closing, iterations=1)
-
 
     # finding out the grid corner
     grid = []
@@ -630,6 +638,8 @@ def extract_grid(image):
         in_vertical = []
         
         num = 0
+
+        
 
         for x in range(0, len(averaged_vertical_lines1) - 1):
             for y in range(0, len(averaged_horizontal_lines1) - 1):
@@ -737,7 +747,7 @@ def extract_grid(image):
     return dict
 
 if __name__ == "__main__":
-    img = cv2.imread("D:\\D\\Major Project files\\opencv\\scanned8.png")
+    img = cv2.imread("D:\\D\\Major Project files\\opencv\\movie.png",0)
     down = extract_grid(img)
     print(down)
     # img = Image.open("chalena3.jpg")
