@@ -52,7 +52,7 @@ def solve(request):
                     for i in range(no_of_rows):
                         temp = []
                         for j in range(no_of_cols):
-                            temp.append((grid_data['gridnums'][i * no_of_cols + j], grid_data['grid'][i * no_of_cols + j])) # this might produce errors in case the size mismatch occurs
+                            temp.append((grid_data['gridnums'][i * no_of_cols + j], grid_data['grid'][i * no_of_cols + j],0)) # this might produce errors in case the size mismatch occurs
                         rows.append(temp)
                     
                     # just initializing empty ones

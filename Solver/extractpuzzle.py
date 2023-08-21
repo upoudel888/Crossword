@@ -117,7 +117,7 @@ def parse_clues(clue_text):
         if match:
             number = float(match.group(1))  # Convert the matched number to float if there is a decimal point
             if number not in clues:
-                clues[number] = match.group(2).strip()
+                clues[number] = [column,match.group(2).strip()]
             else:
                 continue
         elif number is None:
