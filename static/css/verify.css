@@ -209,18 +209,18 @@
     background-color: var(--secondary-pink);
 }
 .cell-num{
-    font-size: 60%;
-    /* margin: 2px 0 0 0.1rem; */
-    font-weight: 500;
+    font-size: 0.5cqw;
+    font-weight: 600;
     position: absolute;
 }
+
 .cell-data{
     position: absolute;
     width: 100%;
     text-align: center;
-    font-size: 103%;
+    font-size: 1.1cqw;
     font-weight: bold;
-    transform: translateY(35%);
+    transform: translateY(10%);
 }
 
 

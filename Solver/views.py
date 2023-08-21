@@ -33,19 +33,28 @@ def get_JSON_from_puz(puz_file):
                 gridnum.append(0)
                 
     across_clues = []
+    across_answer = []
     for clue in numbering.across:
-        answer = str(clue['num']) + ". " + clue['clue']
-        across_clues.append(answer)
+        across_answer.append(''.join(p.solution[clue['cell'] + i] for i in range(clue['len'])))
+        numbered_clue = str(clue['num']) + ". " + clue['clue']
+        across_clues.append(numbered_clue)
         gridnum[int(clue['cell'])] = clue['num']
 
     down_clues = []
+    down_answer = []
     for clue in numbering.down:
-        answer = str(clue['num']) + ". " + clue['clue']
-        down_clues.append(answer)
+        down_answer.append(''.join(p.solution[clue['cell'] + i * numbering.width] for i in range(clue['len'])))
+        numbered_clue = str(clue['num']) + ". " + clue['clue']
+        down_clues.append(numbered_clue)
         gridnum[int(clue['cell'])] = clue['num']
 
     # final JSON format
-    grid_data = {'size': { 'rows': p.height, 'cols': p.width}, 'clues': {'across': across_clues, 'down': down_clues}, 'grid': grid,'gridnums':gridnum}
+    grid_data = {'size': { 'rows': p.height, 'cols': p.width}, 
+                 'clues': {'across': across_clues, 'down': down_clues}, 
+                 'grid': grid,
+                 'gridnums':gridnum,
+                 'answers':{'across':across_answer,'down':down_answer}
+                }
 
     return grid_data
 
@@ -240,7 +249,7 @@ def verify(request):
             for i in range(15):
                 temp = []
                 for j in range(15):
-                    temp.append((nums[i][j]," "))
+                    temp.append((nums[i][j]," ",0))
                 rows.append(temp)
             grid_rows = rows
 
