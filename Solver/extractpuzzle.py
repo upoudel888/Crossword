@@ -117,7 +117,7 @@ def parse_clues(clue_text):
         if match:
             number = float(match.group(1))  # Convert the matched number to float if there is a decimal point
             if number not in clues:
-                clues[number] = match.group(2).strip()
+                clues[number] = [column,match.group(2).strip()]
             else:
                 continue
         elif number is None:
@@ -767,7 +767,11 @@ def extract_grid(image):
         'grid' : grid,
         'gridnums': grid_nums,
         'across_nums': down_clue_num,
-        'down_nums' : across_clue_num
+        'down_nums' : across_clue_num,
+        'clues':{
+            'across' : [],
+            'down': []
+        }
     }
     
     return dict

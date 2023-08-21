@@ -10,15 +10,18 @@
 {% block hero %}
     
     <div class="validate-msg">
-
-            <div class="special-note">
+        <div class="special-note">
+            {% if user_uploaded_image %}
+                <span class="emphasis-text">Puzzle Solution</span><br><br>
+            {% else %}
                 <span class="emphasis-text">Evaluations</span> <br><br>
                 <span class = 'bold'>Letter Accuracy : {{ evalutions.correct_letters_percent|floatformat:"2" }}% </span>
                 ({{ evalutions.correct_letters }}/{{ evalutions.total_letters }}) <br>
                 <div class="dummy"></div>
                 <span class = 'bold'>Word Accuracy : {{ evalutions.correct_words_percent|floatformat:"2" }}% </span>
                 ({{ evalutions.correct_words }}/{{ evalutions.total_words }}) <br><br>
-                <a href={% url 'Solver' %}><button class="custom-btn proceed-button btn-11">Solve Next</button></a>
+                {% endif %}
+            <a href={% url 'Solver' %}><button class="custom-btn proceed-button btn-11">Solve Next</button></a>
         </div>
     </div>
 
@@ -36,7 +39,7 @@
                             <div class="cell-data"></div>
                         </div>
                         {% else %}
-                            <div class="grid-cell {% if data != sol %}wrong-cell{% endif %}" >
+                            <div class="grid-cell {% if user_uploaded_image != True and data != sol %}wrong-cell{% endif %}" >
                                 <div class="cell-num">
                                     {% if num != 0 %} {{num}}{% endif %}
                                 </div>

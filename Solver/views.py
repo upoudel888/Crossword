@@ -12,6 +12,65 @@ from .Inference import solvePuzzle
 # from .extractpuzzle1 import extract_grid,get_tex
 # Create your views here.
 
+def get_JSON_from_puz(puz_file):
+    # Create a temporary file because puz.read takes file_name as an arguement
+    with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+        temp_file.write(puz_file.read())
+    p = puz.read(temp_file.name)    
+    numbering = p.clue_numbering()
+
+    grid = []
+    gridnum = []
+    for row_idx in range(p.height):
+        cell = row_idx * p.width
+        row_solution = p.solution[cell:cell + p.width]
+        for col_index, item in enumerate(row_solution):
+            if p.solution[cell + col_index: cell + col_index + 1] == '.':
+                grid.append(".")
+                gridnum.append(0)
+            else:
+                grid.append(row_solution[col_index: col_index + 1])
+                gridnum.append(0)
+                
+    across_clues = []
+    for clue in numbering.across:
+        answer = str(clue['num']) + ". " + clue['clue']
+        across_clues.append(answer)
+        gridnum[int(clue['cell'])] = clue['num']
+
+    down_clues = []
+    for clue in numbering.down:
+        answer = str(clue['num']) + ". " + clue['clue']
+        down_clues.append(answer)
+        gridnum[int(clue['cell'])] = clue['num']
+
+    # final JSON format
+    grid_data = {'size': { 'rows': p.height, 'cols': p.width}, 'clues': {'across': across_clues, 'down': down_clues}, 'grid': grid,'gridnums':gridnum}
+
+    return grid_data
+
+
+def get_rows_and_clues(grid_data):
+    rows = []  # 2D array[[row1],[row2]] where each element is [cell_number,gold_answer,predicted_answer]
+    no_of_rows = grid_data['size']['rows']
+    no_of_cols = grid_data['size']['cols']
+
+    for i in range(no_of_rows):
+        temp = []
+        for j in range(no_of_cols):
+            temp.append((grid_data['gridnums'][i * no_of_cols + j], grid_data['grid'][i * no_of_cols + j],0)) # prone to overflow wrrors
+        rows.append(temp)
+
+    def separate_num_clues(clue):
+        arr = clue.split(".")
+        return (arr[0],"".join(arr[1:]))
+
+    across_clues = [separate_num_clues(i) for i in grid_data['clues']['across']] # array of (clue_num,clue)
+    down_clues = [separate_num_clues(i) for i in grid_data['clues']['down']]
+
+    return rows,across_clues,down_clues
+
+
 def solve(request):
     context = { }
     if ( request.method == "GET"):
@@ -27,7 +86,8 @@ def solve(request):
             # Image uploaded
             if crossword_file.content_type.startswith('image'):
 
-                # Save the image file or perform any necessary processing
+                request.session['user_uploaded_image'] = True
+
                 # Get the image from the request
                 image = request.FILES.get('crossword_file')
 
@@ -37,26 +97,17 @@ def solve(request):
 
                 # Read the image using OpenCV
                 img_array = cv2.imdecode(np.frombuffer(image.read(), np.uint8), cv2.IMREAD_GRAYSCALE)
-
-                # trying to extract grid
-                try:
+                
+                try: # try extracting the grid from the image
+                    # dict = { 'size' : size, 'grid' : grid, 'gridnums': grid_nums, 'across_nums': down_clue_num,'down_nums' : across_clue_num }
                     grid_data = extract_grid(img_array)
-
-                    rows = []
-                    no_of_rows = grid_data['size']['rows']
-                    no_of_cols = grid_data['size']['cols']
-
-                    for i in range(no_of_rows):
-                        temp = []
-                        for j in range(no_of_cols):
-                            temp.append((grid_data['gridnums'][i * no_of_cols + j], grid_data['grid'][i * no_of_cols + j],0)) # this might produce errors in case the size mismatch occurs
-                        rows.append(temp)
+                    # Converting to parsable format for the template
+                    rows,_,_ = get_rows_and_clues(grid_data)
                     
+                    # just initializing the dictionary with clue_number (as keys) deduced from the grid
                     # key=clue_number and value=clue
                     across_clues_dict = {}
                     down_clues_dict = {}
-
-                    # just initializing the dictionary with clue_number deduced from the grid
                     for i in grid_data['across_nums']:
                         across_clues_dict[i] = ''
                     for i in grid_data['down_nums']:
@@ -67,36 +118,34 @@ def solve(request):
 
                     request.session['grid_extraction_failed'] = False
                     request.session['grid-rows'] = rows
+            
                 except Exception as e:
                     request.session['grid_extraction_failed'] = True
-                    print("Grid Extraction thing failed:", e)
+                    print("Grid Extraction failed:", e)
 
-                # trying to extract clues
-                try:
-
-                    across_clues_dict = request.session.get('across_clues_dict') # bringing clue number from the session
+                
+                try: # try extracting clues
+                    across, down = get_text(img_array) # { number : [column_of_projection_profile,extracted_text]}
+                    
+                     # bringing clue number from the session
+                    across_clues_dict = request.session.get('across_clues_dict')
                     down_clues_dict = request.session.get('down_clues_dict')
 
-                    across, down = get_text(img_array)                           # applying OCR
-                    request.session['clue_extraction_failed'] = False
-
-                    print(across)
-                    print(down)
-
                     for key,value in across.items():
-                        across_clues_dict[int(key)] = value
+                        across_clues_dict[int(key)] = value[1]
                     for key,value in down.items():
-                        down_clues_dict[int(key)] = value
+                        down_clues_dict[int(key)] = value[1]
                     
-                    across_clues = [(key,value.strip(".").strip(" "))for key, value in across_clues_dict.items()]
-                    down_clues = [(key,value.strip(".").strip(" ")) for key, value in down_clues_dict.items()]
+                    across_clues = [(key,value.strip(".").strip(" ").replace("|","l")) for key, value in across_clues_dict.items()]
+                    down_clues = [(key,value.strip(".").strip(" ").replace("|","l")) for key, value in down_clues_dict.items()]
 
+                    request.session['clue_extraction_failed'] = False
                     request.session['across_clues'] = across_clues
                     request.session['down_clues'] = down_clues
 
                 except Exception as e:
                     request.session['clue_extraction_failed'] = True
-                    print("Clue Extraction thing failed:", e)
+                    print("Clue Extraction failed:", e)
 
                 return redirect('Verify')
 
@@ -107,101 +156,43 @@ def solve(request):
                 json_file = request.FILES.get("crossword_file")
                 if json_file is None:
                     return redirect('/solver')
+                
                 grid_data = json.loads(json_file.read())
-
-
-                # extracting grid rows
-                rows = []
-                no_of_rows = grid_data['size']['rows']
-                no_of_cols = grid_data['size']['cols']
-
-                for i in range(no_of_rows):
-                    temp = []
-                    for j in range(no_of_cols):
-                        temp.append((grid_data['gridnums'][i * no_of_cols + j], grid_data['grid'][i * no_of_cols + j],0))
-                    rows.append(temp)
-                
-                def separate_num_clues(clue):
-                    arr = clue.split(".")
-                    return (arr[0],"".join(arr[1:]))
-                
-                across_clues_num = [separate_num_clues(i) for i in grid_data['clues']['across']]
-                down_clues_num = [separate_num_clues(i) for i in grid_data['clues']['down']]
-                
+                rows,across_clues,down_clues = get_rows_and_clues(grid_data)
+                    
                 # updating the session
-                request.session['grid_extraction_failed'] = False   # used to display verify.html
-                request.session['grid-rows'] = rows
-                request.session['across_clues'] = across_clues_num
-                request.session['down_clues'] = down_clues_num
-                request.session['json'] = grid_data                 # used to solve the puzzle
+                request.session['user_uploaded_image'] = False # used in verify.html
+                request.session['grid_extraction_failed'] = False   
+                request.session['clue_extraction_failed'] = False
+
+                request.session['grid-rows'] = rows # displayable format for UI
+                request.session['across_clues'] = across_clues
+                request.session['down_clues'] = down_clues
+                request.session['json'] = grid_data # Used to solve the puzzle
 
                 return redirect('Verify')
                  
             # Puz file Uploaded
             elif crossword_file.content_type == 'application/octet-stream':
+                request.session['user_uploaded_image'] = False
                 
                 puz_file = request.FILES.get("crossword_file")
                 if puz_file is None:
                     return redirect('/solver')
                 
-                # Create a temporary file because puz.read takes file_name as an arguement
-                with tempfile.NamedTemporaryFile(delete=False) as temp_file:
-                    temp_file.write(puz_file.read())
-                p = puz.read(temp_file.name)    
-                numbering = p.clue_numbering()
+                grid_data = get_JSON_from_puz(puz_file)
 
-                grid = []
-                gridnum = []
-                for row_idx in range(p.height):
-                    cell = row_idx * p.width
-                    row_solution = p.solution[cell:cell + p.width]
-                    for col_index, item in enumerate(row_solution):
-                        if p.solution[cell + col_index: cell + col_index + 1] == '.':
-                            grid.append(".")
-                            gridnum.append(0)
-                        else:
-                            grid.append(row_solution[col_index: col_index + 1])
-                            gridnum.append(0)
-                            
-                across_clues = []
-                for clue in numbering.across:
-                    answer = str(clue['num']) + ". " + clue['clue']
-                    across_clues.append(answer)
-                    gridnum[int(clue['cell'])] = clue['num']
-
-                down_clues = []
-                for clue in numbering.down:
-                    answer = str(clue['num']) + ". " + clue['clue']
-                    down_clues.append(answer)
-                    gridnum[int(clue['cell'])] = clue['num']
-
-                # final JSON format
-                grid_data = {'size': { 'rows': p.height, 'cols': p.width}, 'clues': {'across': across_clues, 'down': down_clues}, 'grid': grid,'gridnums':gridnum}
-                
                 # extracting grid rows
-                rows = []
-                no_of_rows = grid_data['size']['rows']
-                no_of_cols = grid_data['size']['cols']
-
-                for i in range(no_of_rows):
-                    temp = []
-                    for j in range(no_of_cols):
-                        temp.append((grid_data['gridnums'][i * no_of_cols + j], grid_data['grid'][i * no_of_cols + j]))
-                    rows.append(temp)
-                
-                # separating to [(num,clues)] format
-                def separate_num_clues(clue):
-                    arr = clue.split(".")
-                    return (arr[0],"".join(arr[1:]))
-                
-                across_clues_num = [separate_num_clues(i) for i in grid_data['clues']['across']]
-                down_clues_num = [separate_num_clues(i) for i in grid_data['clues']['down']]
+                rows,across_clues,down_clues = get_rows_and_clues(grid_data) 
                 
                 # updating the session
                 request.session['grid_extraction_failed'] = False
+                request.session['clue_extraction_failed'] = False
+
                 request.session['grid-rows'] = rows
-                request.session['across_clues'] = across_clues_num
-                request.session['down_clues'] = down_clues_num
+                request.session['across_clues'] = across_clues
+                request.session['down_clues'] = down_clues
+                request.session['json'] = grid_data
 
                 return redirect('Verify')
             else:
@@ -209,53 +200,10 @@ def solve(request):
                    
     return render(request,"Solver/solver.html",context=context)
 
-@csrf_exempt
-def solve1(request):
-    context = {}
-    if( request.method == "POST"):
-        received_data = request.body.decode('utf-8')  # Decode the byte data to a string
-        print("Generating Solutions")
-        # Log the received data for debugging
-        solution,evaluations = solvePuzzle(request.session.get("json"))
-        # printing solution
-        print(solution)
-        print(evaluations)
-
-        request.session['solution'] = solution
-        request.session['evalutions'] = evaluations
-
-        # Return the received data in the response
-        return redirect("Solution")
-    
-def showSolution(request):
-    grid_rows = request.session.get("grid-rows")
-    across_clues = request.session.get("across_clues")
-    down_clues = request.session.get("down_clues")
-    solutions = request.session.get("solution")
-    evaluations = request.session.get('evalutions')
-
-
-    context = {}
-    for i in range(0,len(solutions)):
-        for j in range(0,len(grid_rows[i])):
-            grid_rows[i][j][2] = solutions[i][j] if solutions[i][j] != '' else " "
-
-
-    context['grid_rows'] = grid_rows # Array of arrays 1st array element contains cell data for 1st and 1st columnrow as [ {grid_num},{grid-value}] format
-    context['across_clues'] = across_clues
-    context['down_clues'] = down_clues
-    context['evalutions'] = evaluations
-
-    return render(request,"Solver/solutions.html",context=context)
-
 
 
 def verify(request):
 
-    # dictionary with keys 
-    # grid_rows = [(grid-num,grid-value)]
-    # across_clues = ["1. hello mello"]
-    # down_clues = ["1. hello wello"]
     context = {}
     
     if(request.method == "GET"):
@@ -302,3 +250,55 @@ def verify(request):
         context['solutions'] = 0
 
         return render(request,"Solver/verify.html",context=context)
+
+@csrf_exempt
+def solve1(request):
+    context = {}
+    if( request.method == "POST"):
+        received_data = json.loads(request.body.decode('utf-8'))  # Decode the byte data to a string
+        if(not request.session.get('user_uploaded_image')):
+            print(request.session.get("json"))
+            print("\nGenerating Solutions")
+            solution,evaluations = solvePuzzle(request.session.get("json"))
+        else:
+            # Upadating session after receiving modified clues and grid
+            rows,across_clues,down_clues = get_rows_and_clues(received_data)
+            request.session['grid-rows'] = rows
+            request.session['across_clues'] = across_clues
+            request.session['down_clues'] = down_clues
+            request.session['json'] = received_data
+
+            solution,evaluations = solvePuzzle(received_data)
+    
+        # printing solution
+        print(solution)
+        print(evaluations)
+
+        request.session['solution'] = solution
+        request.session['evalutions'] = evaluations
+
+        return redirect("Solution")
+    
+
+def showSolution(request):
+
+    grid_rows = request.session.get("grid-rows")
+    across_clues = request.session.get("across_clues")
+    down_clues = request.session.get("down_clues")
+    solutions = request.session.get("solution")
+    evaluations = request.session.get('evalutions')
+
+
+    context = {}
+    for i in range(0,len(solutions)):
+        for j in range(0,len(grid_rows[i])):
+            grid_rows[i][j][2] = solutions[i][j] if solutions[i][j] != '' else " "
+
+
+    context['grid_rows'] = grid_rows 
+    context['across_clues'] = across_clues
+    context['down_clues'] = down_clues
+    context['evalutions'] = evaluations
+    context['user_uploaded_image'] = request.session.get("user_uploaded_image")
+
+    return render(request,"Solver/solutions.html",context=context)

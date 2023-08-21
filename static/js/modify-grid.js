@@ -45,11 +45,7 @@ class Grid{
         this.getCluesWithNums();         // computes this.acrossCluesWithNums and this.downCluesWithNums
         this.addCellEventListener();     // Adds click event listener to the grid cells
         this.addButtonEventListener();
-
         this.assignNewClues();
-
-        console.log(JSON.stringify(this.acrossCluesWithNums));
-        console.log(JSON.stringify(this.downCluesWithNums));
 
     }
 
@@ -57,18 +53,6 @@ class Grid{
         this.dimensionInfo.innerText = `${this.dimension} X ${this.dimension}`;
     }
 
-    // get across and down clues from the dom
-    getCluesWithNums(){
-        for(let elem of this.acrossClues){
-            this.acrossCluesWithNums[elem.firstElementChild.innerText] = elem.lastElementChild.innerText;
-        }
-
-        for(let elem of this.downClues){
-            this.downCluesWithNums[elem.firstElementChild.innerText] = elem.lastElementChild.innerText;
-        }
-    }
-
-    
 
     // when user clicks button to change the grid
     // changes are made to either this.grid_rows or this.cells to reflect to the dom
@@ -90,16 +74,60 @@ class Grid{
     }
 
     
+    // this function is triggered when user clicks proceed button
     makeSolveRequest(){
-        const hero = document.querySelector(".hero");
-        hero.classList.toggle("overlay");
+
+        // Making the JSON data ready
+        let gridJSON = {
+            "size" : {
+                "rows" : this.dimension,
+                "cols" : this.dimension
+            },
+            "gridnums" : this.grid_nums,
+
+        }
+        
+        let grid = [];
+        for(let rows of this.grid){
+            for(let elem of rows){
+                grid.push(elem);
+            }
+        }
+        
+        let acrossClues = [];
+        let downClues = [];
+        let acrossAnswers = [];
+        let downAnswers= [];
+        for(let clue_num of this.across_nums){
+            acrossClues.push(String(clue_num) + ". " + this.acrossCluesWithNums[clue_num]);
+            acrossAnswers.push("A".repeat(this.across_length[this.across_nums.indexOf(clue_num)]));
+        }
+        for(let clue_num of this.down_nums){
+            downClues.push(String(clue_num) + ". " + this.downCluesWithNums[clue_num]);
+            downAnswers.push("A".repeat(this.down_length[this.down_nums.indexOf(clue_num)]));
+        }
+        
+        gridJSON["grid"] = grid;
+        gridJSON['clues'] = {
+            "across" : acrossClues,
+            "down": downClues
+        };
+        gridJSON['answers'] = {
+            "across" : acrossAnswers,
+            "down": downAnswers
+        };
+
+        console.log(gridJSON)
+        const hero = document.querySelector(".hero");   // to show the loading svg
+        hero.classList.toggle("overlay"); 
+
         fetch('/solver/solve/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 // You might need other headers like CSRF token, authentication, etc.
             },
-            body: JSON.stringify(this.acrossCluesWithNums)
+            body: JSON.stringify(gridJSON)
         })
         .then( response => {
             if (response.ok) {
@@ -122,8 +150,9 @@ class Grid{
             // Handle errors here
             console.error('Error:', error);
         });
-
     }
+
+    // ****************** grid manipulation ***************************
 
     createCell(){
         // Create the main grid-cell div
@@ -247,29 +276,6 @@ class Grid{
         this.reinitializeAfterUpdate();
     }
 
-    addButtonEventListener(){
-        this.proceedButton.addEventListener('click',()=>{
-            this.makeSolveRequest();
-        });
-
-        this.decreaseButton.addEventListener('click',()=>{
-            this.decreaseGrid();
-        });
-        
-        this.increaseButton.addEventListener('click',()=>{
-            this.increaseGrid();
-        });
-
-        this.rotateLeftButton.addEventListener("click",()=>{
-            this.rotateGrid(false);
-        });
-        this.rotateRightButton.addEventListener("click",()=>{
-            this.rotateGrid(true);
-        });
-        this.eraseButton.addEventListener("click",()=>{
-            this.eraseGrid();
-        });
-    }
 
     handleCellClick(cell,index){
         // original clicked position
@@ -333,6 +339,33 @@ class Grid{
         });
     }
 
+    addButtonEventListener(){
+        this.proceedButton.addEventListener('click',()=>{
+            this.makeSolveRequest();
+        });
+
+        this.decreaseButton.addEventListener('click',()=>{
+            this.decreaseGrid();
+        });
+        
+        this.increaseButton.addEventListener('click',()=>{
+            this.increaseGrid();
+        });
+
+        this.rotateLeftButton.addEventListener("click",()=>{
+            this.rotateGrid(false);
+        });
+
+        this.rotateRightButton.addEventListener("click",()=>{
+            this.rotateGrid(true);
+        });
+
+        this.eraseButton.addEventListener("click",()=>{
+            this.eraseGrid();
+        });
+    }
+
+    
     // change the UI with the updated grid numbers
     assignNewNumbers(){
         for(let idx in this.grid_nums){
@@ -341,6 +374,30 @@ class Grid{
             }else{
                 this.cellNums[idx].innerHTML = this.grid_nums[idx];
             }
+        }
+    }
+    
+    addClueEditEventListener(){
+        this.acrossClues.forEach((elem)=>{
+            elem.lastElementChild.addEventListener("input",()=>{
+                this.acrossCluesWithNums[elem.firstElementChild.innerText] = elem.lastElementChild.innerText.trim();
+            })
+        });
+        this.downClues.forEach((elem)=>{
+            elem.lastElementChild.addEventListener("input",()=>{
+                this.downCluesWithNums[elem.firstElementChild.innerText] = elem.lastElementChild.innerText.trim();
+            });
+        });
+    }
+
+    // get across and down clues from the dom
+    getCluesWithNums(){
+        for(let elem of this.acrossClues){
+            this.acrossCluesWithNums[elem.firstElementChild.innerText] = elem.lastElementChild.innerText;
+        }
+
+        for(let elem of this.downClues){
+            this.downCluesWithNums[elem.firstElementChild.innerText] = elem.lastElementChild.innerText;
         }
     }
 
@@ -386,6 +443,8 @@ class Grid{
 
         });
 
+        
+
         // adding new down clues
         this.down_nums.forEach((elem)=>{
             const divElement = document.createElement('div');
@@ -415,6 +474,8 @@ class Grid{
         // updating these variables to remove in the next condition
         this.acrossClues = document.querySelectorAll(".across-clue");
         this.downClues =  document.querySelectorAll(".down-clue");
+
+        this.addClueEditEventListener();
     }
 
     // get's the grid from the DOM once the page is loaded
@@ -448,6 +509,8 @@ class Grid{
 
         this.grid_nums = [];
         this.across_nums = [];
+        this.across_length = [];
+        this.down_length = [];
         this.down_nums = [];
         let in_horizontal = [];
         let in_vertical = [];
@@ -487,36 +550,38 @@ class Grid{
                         in_horizontal.push(...temp_horizontal_arr);
                         num++;
                         this.across_nums.push(num)
+                        this.across_length.push(horizontal_length)
                         this.grid_nums.push(num);
                         continue;
                     }
-    
+                    
                     this.grid_nums.push(0);
                 }
-    
+                
                 // If present in one (0 1)
                 if (!vertical_presence && horizontal_presence) {
                     let vertical_length = 0;
                     let temp_vertical_arr = [];
-    
+                    
                     // Iterate in y direction until the end of the grid or until a black box is found
                     while (y + vertical_length < this.dimension && this.grid[x][y + vertical_length] !== '.') {
                         temp_vertical_arr.push([x, y + vertical_length]);
                         vertical_length++;
                     }
-    
+                    
                     // If vertical length is greater than 1, then append the temp_vertical_arr to in_vertical array
                     if (vertical_length > 1) {
                         in_vertical.push(...temp_vertical_arr);
+                        this.down_length.push(vertical_length)
                         num++;
                         this.down_nums.push(num)
                         this.grid_nums.push(num);
                         continue;
                     }
-    
+                    
                     this.grid_nums.push(0);
                 }
-    
+                
                 // If not present in both (0 0)
                 if (!horizontal_presence && !vertical_presence) {
                     let horizontal_length = 0;
@@ -542,6 +607,8 @@ class Grid{
                         in_vertical.push(...temp_vertical_arr);
                         num++;
                         this.across_nums.push(num);
+                        this.across_length.push(horizontal_length);
+                        this.down_length.push(vertical_length);
                         this.down_nums.push(num);
                         this.grid_nums.push(num);
                     }
@@ -549,6 +616,7 @@ class Grid{
                     else if (vertical_length > 1) {
                         in_vertical.push(...temp_vertical_arr);
                         num++;
+                        this.down_length.push(vertical_length);
                         this.down_nums.push(num);
                         this.grid_nums.push(num);
                     }
@@ -556,6 +624,7 @@ class Grid{
                     else if (horizontal_length > 1) {
                         in_horizontal.push(...temp_horizontal_arr);
                         num++;
+                        this.across_length.push(horizontal_length);
                         this.across_nums.push(num);
                         this.grid_nums.push(num);
                     } else {
@@ -569,9 +638,12 @@ class Grid{
         let temp = this.down_nums;
         this.down_nums = JSON.parse(JSON.stringify(this.across_nums));
         this.across_nums = JSON.parse(JSON.stringify(temp));
-    }
 
-    
+        temp = this.down_length;
+        this.down_length = JSON.parse(JSON.stringify(this.across_length));
+        this.across_length = JSON.parse(JSON.stringify(temp));
+
+    }
 }
 
 let grid = new Grid();
