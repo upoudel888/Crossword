@@ -42,9 +42,6 @@ def solve(request):
                 try:
                     grid_data = extract_grid(img_array)
 
-                    print(grid_data['across_nums'])
-                    print(grid_data['down_nums'])
-
                     rows = []
                     no_of_rows = grid_data['size']['rows']
                     no_of_cols = grid_data['size']['cols']
@@ -52,13 +49,14 @@ def solve(request):
                     for i in range(no_of_rows):
                         temp = []
                         for j in range(no_of_cols):
-                            temp.append((grid_data['gridnums'][i * no_of_cols + j], grid_data['grid'][i * no_of_cols + j])) # this might produce errors in case the size mismatch occurs
+                            temp.append((grid_data['gridnums'][i * no_of_cols + j], grid_data['grid'][i * no_of_cols + j],0)) # this might produce errors in case the size mismatch occurs
                         rows.append(temp)
                     
-                    # just initializing empty ones
+                    # key=clue_number and value=clue
                     across_clues_dict = {}
                     down_clues_dict = {}
 
+                    # just initializing the dictionary with clue_number deduced from the grid
                     for i in grid_data['across_nums']:
                         across_clues_dict[i] = ''
                     for i in grid_data['down_nums']:
@@ -75,25 +73,27 @@ def solve(request):
 
                 # trying to extract clues
                 try:
-                    across_clues_dict = request.session.get('across_clues_dict')
+
+                    across_clues_dict = request.session.get('across_clues_dict') # bringing clue number from the session
                     down_clues_dict = request.session.get('down_clues_dict')
 
-                    across, down = get_text(img_array)
+                    across, down = get_text(img_array)                           # applying OCR
                     request.session['clue_extraction_failed'] = False
 
-                    print(across,down)
+                    print(across)
+                    print(down)
 
                     for key,value in across.items():
                         across_clues_dict[int(key)] = value
                     for key,value in down.items():
                         down_clues_dict[int(key)] = value
-
-                    print(down)
+                    
                     across_clues = [(key,value.strip(".").strip(" "))for key, value in across_clues_dict.items()]
                     down_clues = [(key,value.strip(".").strip(" ")) for key, value in down_clues_dict.items()]
 
                     request.session['across_clues'] = across_clues
                     request.session['down_clues'] = down_clues
+
                 except Exception as e:
                     request.session['clue_extraction_failed'] = True
                     print("Clue Extraction thing failed:", e)
@@ -109,7 +109,6 @@ def solve(request):
                     return redirect('/solver')
                 grid_data = json.loads(json_file.read())
 
-                request.session['json'] = grid_data
 
                 # extracting grid rows
                 rows = []
@@ -130,10 +129,11 @@ def solve(request):
                 down_clues_num = [separate_num_clues(i) for i in grid_data['clues']['down']]
                 
                 # updating the session
-                request.session['grid_extraction_failed'] = False
+                request.session['grid_extraction_failed'] = False   # used to display verify.html
                 request.session['grid-rows'] = rows
                 request.session['across_clues'] = across_clues_num
                 request.session['down_clues'] = down_clues_num
+                request.session['json'] = grid_data                 # used to solve the puzzle
 
                 return redirect('Verify')
                  
@@ -296,7 +296,6 @@ def verify(request):
                 rows.append(temp)
             grid_rows = rows
 
-        print(grid_rows)
         context['grid_rows'] = grid_rows # Array of arrays 1st array element contains cell data for 1st and 1st columnrow as [ {grid_num},{grid-value}] format
         context['across_clues'] = across_clues
         context['down_clues'] = down_clues
