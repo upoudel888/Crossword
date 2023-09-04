@@ -119,6 +119,10 @@
     background-color: var(--secondary-blue-light);
     padding: 0.3rem;
 }
+.across-clue.highlight .clue-num,
+.across-clue.highlight .clue-text{
+    background-color: var(--secondary-blue);
+}
 
 .grid-change-options{
     display: flex;
@@ -199,12 +203,21 @@
     background-color: var(--light-white);
 }
 
+
+.grid-cell.highlight{
+    background-color: var(--secondary-blue);
+}
+
 .grid-cell:hover{
     box-shadow: inset 0 0 1rem 2px var(--secondary-blue);
 }
 .dead-cell{
     background-color: black;
-}  
+}
+
+.hide-for-answer.wrong-cell{
+    background-color: white;
+}
 .wrong-cell{
     background-color: var(--secondary-pink);
 }
@@ -223,6 +236,9 @@
     transform: translateY(10%);
 }
 
+.cell-data.hidden{
+    visibility: hidden;
+}
 
 .dummy{
     content: " ";

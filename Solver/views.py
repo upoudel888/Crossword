@@ -9,10 +9,8 @@ from . import forms
 from .extractpuzzle import extract_grid,get_text
 from .Inference import solvePuzzle
 
-# from .extractpuzzle1 import extract_grid,get_tex
-# Create your views here.
-
 def get_JSON_from_puz(puz_file):
+
     # Create a temporary file because puz.read takes file_name as an arguement
     with tempfile.NamedTemporaryFile(delete=False) as temp_file:
         temp_file.write(puz_file.read())
@@ -260,11 +258,9 @@ def verify(request):
 
         return render(request,"Solver/verify.html",context=context)
 
-@csrf_exempt
 def solve1(request):
-    context = {}
     if( request.method == "POST"):
-        received_data = json.loads(request.body.decode('utf-8'))  # Decode the byte data to a string
+        received_data = json.loads(request.body.decode('utf-8'))  # decoding byte data to a string
         if(not request.session.get('user_uploaded_image')):
             print(request.session.get("json"))
             print("\nGenerating Solutions")

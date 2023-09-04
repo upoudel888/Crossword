@@ -6,7 +6,8 @@
 {% endblock css %}
 
 {% block script %}
-    <script src= {%static "js/modify-grid.js"%} defer></script>
+    <script src={% static 'js/crossword.js' %}  type="module" defer></script>
+    <script src= {%static "js/modify-grid.js"%} type="module" defer></script>
 {% endblock script %}
 
 {% block hero %}

@@ -5,7 +5,9 @@
     <link rel="stylesheet" href= {%static "css/verify.css" %}>
 {% endblock css %}
 
-{% block script %}{% endblock script %}
+{% block script %}
+<script src= {%static "js/animateSolution.js"%} type="module" defer></script>
+{% endblock script %}
 
 {% block hero %}
     
@@ -39,11 +41,11 @@
                             <div class="cell-data"></div>
                         </div>
                         {% else %}
-                            <div class="grid-cell {% if user_uploaded_image != True and data != sol %}wrong-cell{% endif %}" >
+                            <div class="grid-cell hide-for-answer {% if user_uploaded_image != True and data != sol %}wrong-cell{% endif %}" >
                                 <div class="cell-num">
                                     {% if num != 0 %} {{num}}{% endif %}
                                 </div>
-                                <div class="cell-data">{{sol}}</div>
+                                <div class="cell-data hidden">{{sol}}</div>
                             </div>
                         {% endif %}
                     {% endfor %}
