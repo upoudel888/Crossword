@@ -5,7 +5,7 @@
     border-bottom: 3px solid black;
 }
 
-.validate-msg{
+.note-ribbon{
     padding: 1rem;
     text-align: center;
     background-color: var(--secondary-blue);
@@ -119,6 +119,7 @@
     background-color: var(--secondary-blue-light);
     padding: 0.3rem;
 }
+
 .across-clue.highlight .clue-num,
 .across-clue.highlight .clue-text{
     background-color: var(--secondary-blue);
@@ -205,7 +206,11 @@
 
 
 .grid-cell.highlight{
-    background-color: var(--secondary-blue);
+    background-color: var(--secondary-blue) !important;
+}
+
+.grid-cell.highlight.wrong-cell{
+    background-color: var(--secondary-pink) !important;
 }
 
 .grid-cell:hover{
@@ -243,4 +248,10 @@
 .dummy{
     content: " ";
     height: 0.2rem;
+}
+
+@media screen and (max-width: 992px){
+    .note-ribbon{
+        min-width: 100%;
+    }
 }

@@ -50,11 +50,14 @@ export default class Crossword{
         const downCluesDiv = document.querySelector(".down-clues");
         let wrongEncounterCount = {}
         
+        
         for( let i in this.grid_nums){ // looping through keys
-            let currentlyHighlightingClue = null;
-            let currentlyHighlightingCellsPos = [];
             
-            if(this.across_nums.includes(this.grid_nums[i])){     
+            
+            if(this.across_nums.includes(this.grid_nums[i])){  
+                let currentlyHighlightingClue = null;
+                let currentlyHighlightingCellsPos = [];
+                
                 // highlight clue
                 let acrossClueElem = document.querySelector(`.across-clue-${this.grid_nums[i]}`);  
                 acrossClueElem.lastElementChild.style.backgroundColor = "var(--secondary-blue)";
@@ -64,7 +67,7 @@ export default class Crossword{
                 // scroll to make the clue visible 
                 let scrollPosition = acrossClueElem.offsetTop - acrossCluesDiv.offsetTop - (acrossCluesDiv.clientHeight/2); 
                 acrossCluesDiv.scrollTop = scrollPosition;
-
+                
                 // highlight cells
                 let length = this.across_length[this.across_nums.indexOf(this.grid_nums[i])];
                 let rowPos = Math.floor(i / this.dimension);
@@ -75,7 +78,7 @@ export default class Crossword{
                     this.cells[pos].style.backgroundColor = "var(--secondary-blue)";
                     this.cells[pos].lastElementChild.style.visibility = "visible";
                     this.cells[pos].classList.remove("hide-for-answer");
-
+                    
                     if(this.cells[pos].classList.contains("wrong-cell")){
                         if(! wrongEncounterCount[pos]){
                             wrongEncounterCount[pos] = 1;
@@ -83,15 +86,15 @@ export default class Crossword{
                             wrongEncounterCount[pos] += 1;
                         }
                     }
-
+                    
                     currentlyHighlightingCellsPos.push(pos);
                 }
-
+                
                 // reverse the process
                 await sleep(300);
-
-                acrossClueElem.firstElementChild.style.backgroundColor = "white";
-                acrossClueElem.lastElementChild.style.backgroundColor = "var(--secondary-blue-light)";
+                
+                currentlyHighlightingClue.firstElementChild.style.backgroundColor = "white";
+                currentlyHighlightingClue.lastElementChild.style.backgroundColor = "var(--secondary-blue-light)";
                 for( let pos1 of currentlyHighlightingCellsPos){
                     if(this.cells[pos1].classList.contains("wrong-cell")){
                         if(wrongEncounterCount[pos1] > 1){
@@ -103,9 +106,25 @@ export default class Crossword{
                         this.cells[pos1].style.backgroundColor = "white";
                     }
                 }
+                
+                currentlyHighlightingClue.style.cursor = "pointer"; // add event listener
+                currentlyHighlightingClue.addEventListener("click",()=>{
+                    // remove every other highlight classes
+                    let highlighted = document.querySelectorAll(".highlight");
+                    highlighted.forEach(elem =>{elem.classList.remove("highlight")});
+                    
+                    currentlyHighlightingClue.classList.toggle("highlight");
+                    currentlyHighlightingCellsPos.forEach(pos2 =>{
+                        this.cells[pos2].classList.toggle("highlight");
+                    })
+                    
+                })
             }
-
+            
+            
             if(this.down_nums.includes(this.grid_nums[i])){
+                let currentlyHighlightingClue = null;
+                let currentlyHighlightingCellsPos = [];
                 // highlight clue
                 let downClueElem = document.querySelector(`.down-clue-${this.grid_nums[i]}`);  
                 downClueElem.lastElementChild.style.backgroundColor = "var(--secondary-blue)";
@@ -137,11 +156,13 @@ export default class Crossword{
 
                     currentlyHighlightingCellsPos.push(pos);
                 }
+
                 // reverse the process
                 await sleep(300);
-
-                downClueElem.firstElementChild.style.backgroundColor = "white";
-                downClueElem.lastElementChild.style.backgroundColor = "var(--secondary-blue-light)";
+                
+                currentlyHighlightingClue.firstElementChild.style.backgroundColor = "white";
+                currentlyHighlightingClue.lastElementChild.style.backgroundColor = "var(--secondary-blue-light)";
+                
                 for( let pos1 of currentlyHighlightingCellsPos){
                     if(this.cells[pos1].classList.contains("wrong-cell")){
                         if(wrongEncounterCount[pos1] > 1){
@@ -153,6 +174,18 @@ export default class Crossword{
                         this.cells[pos1].style.backgroundColor = "white";
                     }
                 }
+                
+                currentlyHighlightingClue.style.cursor = "pointer"; // add event listener
+                currentlyHighlightingClue.addEventListener("click",()=>{
+                    // remove every other highlight classes
+                    let highlighted = document.querySelectorAll(".highlight");
+                    highlighted.forEach(elem =>{elem.classList.remove("highlight")});
+                    currentlyHighlightingClue.classList.toggle("highlight");
+                    currentlyHighlightingCellsPos.forEach(pos2 =>{
+                        this.cells[pos2].classList.toggle("highlight");
+                    })
+
+                })
             }
 
         }
