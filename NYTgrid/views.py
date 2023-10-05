@@ -20,8 +20,7 @@ def welcome(request):
 
 def index(request):
     task = go_to_sleep.delay(1)
-    
-    return render(request, 'NYTgrid/index.html', {'task_id' : task.task_id})
+    return render(request, 'NYTgrid/index.html', {'task' : task, 'task_id' : task.task_id})
 
 
 def getGrid(request):

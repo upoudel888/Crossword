@@ -7,7 +7,7 @@ import puz
 import tempfile
 from .extractpuzzle import extract_grid,get_text
 from .Inference import solvePuzzle
-from .tasks import solvePuzzle69
+# from .tasks import solvePuzzle69
 
 def get_JSON_from_puz(puz_file):
 
@@ -287,10 +287,10 @@ def solve1(request):
 
         return redirect("Solution")
     
-def index(request):
-    task = go_to_sleep.delay(1)
+# def index(request):
+#     task = go_to_sleep.delay(1)
     
-    return render(request, 'NYTgrid/index.html', {'task_id' : task.task_id})
+#     return render(request, 'NYTgrid/index.html', {'task_id' : task.task_id})
 
 
 def showSolution(request):
