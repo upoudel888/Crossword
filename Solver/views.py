@@ -5,9 +5,9 @@ import numpy as np
 import json
 import puz
 import tempfile
-from . import forms
 from .extractpuzzle import extract_grid,get_text
 from .Inference import solvePuzzle
+from .tasks import solvePuzzle69
 
 def get_JSON_from_puz(puz_file):
 
@@ -65,7 +65,7 @@ def get_rows_and_clues(grid_data):
     for i in range(no_of_rows):
         temp = []
         for j in range(no_of_cols):
-            temp.append((grid_data['gridnums'][i * no_of_cols + j], grid_data['grid'][i * no_of_cols + j],0)) # prone to overflow wrrors
+            temp.append([grid_data['gridnums'][i * no_of_cols + j], grid_data['grid'][i * no_of_cols + j],0]) # prone to overflow wrrors
         rows.append(temp)
 
     def separate_num_clues(clue):
@@ -258,6 +258,7 @@ def verify(request):
 
         return render(request,"Solver/verify.html",context=context)
 
+
 def solve1(request):
     if( request.method == "POST"):
         received_data = json.loads(request.body.decode('utf-8'))  # decoding byte data to a string
@@ -277,13 +278,20 @@ def solve1(request):
     
         # printing solution
         print(solution)
+        print("hello")
         print(evaluations)
 
         request.session['solution'] = solution
         request.session['evalutions'] = evaluations
 
+
         return redirect("Solution")
     
+def index(request):
+    task = go_to_sleep.delay(1)
+    
+    return render(request, 'NYTgrid/index.html', {'task_id' : task.task_id})
+
 
 def showSolution(request):
 
@@ -293,6 +301,7 @@ def showSolution(request):
     solutions = request.session.get("solution")
     evaluations = request.session.get('evalutions')
 
+    print(grid_rows)
 
     context = {}
     for i in range(0,len(solutions)):
