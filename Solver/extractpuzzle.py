@@ -256,7 +256,8 @@ def group_lines(coordinates,axis=0,threshold=10):
                 groups.append(current_group)
                 current_group = []
         current_group.append(sorted_coordinates[i]) # condition to append to the group
-    groups.append(current_group)
+    if(len(current_group) > 4):
+        groups.append(current_group)
     return groups
 
 # Use the Grouped Lines to Fit a line using Linear Regression
@@ -408,66 +409,69 @@ def extract_grid(image):
     sorted_contours = list(sorted(contours, key=cv2.contourArea,reverse=True))
     # filtering out the top 10 largest by applying NMS and only selecting square ones (Apsect ratio 1)
     filtered_contours = filter_contours(image, sorted_contours[0:10],iou_threshold=0.6,asp_ratio=1,tolerance=0.2)
+    
     # largest Contour Extraction
-    largest_contour = filtered_contours[0]
+    largest_contour = []
+    if(len(filtered_contours)):
+        largest_contour = filtered_contours[0]
+    else:
+        largest_contour = sorted_contours[0]
 
+    # --- Performing Perspective warp of the largest contour ---
+    coordinates_list = []
 
-    # -- Cropping out the largest Contour and Masking Other regions --
+    if(largest_contour.shape != (4,1,2)):
+        largest_contour = cv2.convexHull(largest_contour)
+        if(largest_contour.shape != (4,1,3)):
+            rect = cv2.minAreaRect(largest_contour)
+            largest_contour = cv2.boxPoints(rect)
+            largest_contour = largest_contour.astype('int')
 
-    largest_contour = filtered_contours[0]
-    # creating the mask for just the maximum contour
-    mask = np.zeros_like(image)
-    hull = cv2.convexHull(largest_contour)
-    cv2.drawContours(mask, [hull], -1, (255, 255, 255), -2, cv2.LINE_AA)
-    # applying the mask on the original image
-    masked_image = cv2.bitwise_and(image, mask)
+    coordinates_list = largest_contour.reshape(4, 2).tolist()
 
-    # cropping the masked part
-    x,y,w,h = cv2.boundingRect(filtered_contours[0])
+    # Convert coordinates_list to a numpy array
+    coordinates_array = np.array(coordinates_list)
 
-    ymin = y-20
-    ymax = y+h+20
-    xmin = x-20
-    xmax = x+w+20
+    # Find the convex hull of the points
+    hull = cv2.convexHull(coordinates_array)
 
-    # Bound ymin within the shape of masked_image
-    ymin = max(0, min(ymin, masked_image.shape[0]))
-    ymax = max(0, min(ymax, masked_image.shape[0]))
-    xmin = max(0, min(xmin, masked_image.shape[1]))
-    xmax = max(0, min(xmax, masked_image.shape[1]))
-    cropped_image_main = masked_image[ymin:ymax, xmin:xmax]
+    # Find the extreme points of the convex hull
+    extreme_points = np.squeeze(hull)
 
-    # -- Rotating the image if needed --
+    # Sort the extreme points by their x and y coordinates to determine the order
+    sorted_points = extreme_points[np.lexsort((extreme_points[:, 1], extreme_points[:, 0]))]
+
+    # Extract top left, bottom right, top right, and bottom left points
+    tl = sorted_points[0]
+    tr = sorted_points[1]
+    bl = sorted_points[2]
+    br = sorted_points[3]
+
+    if(tr[1] < tl[1]):
+        tl,tr = tr,tl
+    if(br[1] < bl[1]):
+        bl,br = br,bl
+
+    # Define pts1
+    pts1 = [tl, bl, tr, br]
+
+    # Calculate the bounding rectangle coordinates
+    x, y, w, h = 0,0,400,400
+    # Define pts2 as the corners of the bounding rectangle
+    pts2 = [[3, 3], [400, 3], [3, 400], [400, 400]]
+
+    # Calculate the perspective transformation matrix
+    matrix = cv2.getPerspectiveTransform(np.float32(pts1), np.float32(pts2))
+
+    # Apply the perspective transformation to the cropped_image
+    transformed_img = cv2.warpPerspective(image, matrix, (403, 403))
+    cropped_image = transformed_img.copy()
 
     # if the largest contour was not exactly quadilateral
-    rotation_flag = 0
-    rotated_roi = []
-
-    if( largest_contour.shape == (4,1,2)):
-        # Reshape the largest_contour to get four coordinates as a list
-        coordinates_list = largest_contour.reshape(4, 2).tolist()
-        b = coordinates_list[0][0] - coordinates_list[1][0]
-        p = coordinates_list[0][1] - coordinates_list[1][1]
-        # calculating the angle to be rotated
-        angle = math.degrees(math.atan(p/(b+0.0001)))
-
-        if( round(abs(angle)) % 90 != 0):
-            rotation_flag = 1
-            image = cropped_image_main.copy()
-
-            (h, w) = image.shape[:2]
-            center = (w // 2, h // 2)
-            # Calculate the rotation matrix
-            rotation_matrix = cv2.getRotationMatrix2D(center, angle, 1.0)
-            # Perform the rotation
-            rotated_roi = cv2.warpAffine(image, rotation_matrix, (w, h))
-
-    cropped_image = cropped_image_main.copy() if not rotation_flag else rotated_roi
 
     # -- Performing Hough Transform --
 
-    similarity_threshold = math.floor(h/40) # Thresholds for filtering Similar Hough Lines
-    spacing_threshold = math.floor(h/30)
+    similarity_threshold = math.floor(w/30) # Thresholds for filtering Similar Hough Lines
 
     # Applying Gaussian Blur to reduce noice and improve dege detection
     blurred = cv2.GaussianBlur(cropped_image, (5, 5), 0)
@@ -551,8 +555,8 @@ def extract_grid(image):
     # removing the duplicate corners
     corners_no_dup = list(set(corners1))
 
-    min_cell_width = w/30
-    min_cell_height = h/30
+    min_cell_width = w/25
+    min_cell_height = h/25
 
     # grouping coordinates into probabale array that could fit a horizontal and vertical lien
     vertical_lines = group_lines(corners_no_dup,0,min_cell_height)

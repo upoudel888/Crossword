@@ -52,7 +52,7 @@ export default class Crossword{
         
         
         for( let i in this.grid_nums){ // looping through keys
-            
+
             
             if(this.across_nums.includes(this.grid_nums[i])){  
                 let currentlyHighlightingClue = null;

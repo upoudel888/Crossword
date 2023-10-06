@@ -70,7 +70,7 @@
     align-items: flex-start;
     justify-content: center;
     flex-wrap: wrap;
-    height: 30rem;
+    height: 35rem;
 }
 
 .across-clues, .down-clues{
@@ -115,7 +115,7 @@
     padding: 0.3rem;
 }
 .clue-text{
-    width: 13rem;
+    width: 11rem;
     background-color: var(--secondary-blue-light);
     padding: 0.3rem;
 }
@@ -180,8 +180,8 @@
     padding: 0.5rem 1rem;
 }
 .grid{
-    width: 30rem;
-    height: 30rem;
+    width: 35rem;
+    height: 35rem;
     border: 2px solid black;
     background-color: rgba(0,0,0,1);
     display: flex;
@@ -227,18 +227,19 @@
     background-color: var(--secondary-pink);
 }
 .cell-num{
-    font-size: 0.5cqw;
+    font-size: 55%;
     font-weight: 600;
     position: absolute;
+    color: rgb(59, 59, 59);
 }
 
 .cell-data{
     position: absolute;
     width: 100%;
     text-align: center;
-    font-size: 1.1cqw;
+    font-size: 110%;
     font-weight: bold;
-    transform: translateY(10%);
+    transform: translateY(15%);
 }
 
 .cell-data.hidden{
