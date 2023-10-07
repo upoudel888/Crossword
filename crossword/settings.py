@@ -41,7 +41,9 @@ INSTALLED_APPS = [
     "Home",
     "Solver",
     "Generator",
-    "NYTgrid"
+    "NYTgrid",
+    "celery",
+    "celery_progress",
 ]
 
 MIDDLEWARE = [
@@ -135,3 +137,32 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "default"  # or comfortabley anything else
+
+CACHES = {
+    'default': {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+              "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+     }
+}
+
+# CELERY_BROKER_URL = 'redis://default:YFDSLJn1dlzop854RkXC2Euv4h783ZNb@redis-19704.c56.east-us.azure.cloud.redislabs.com:19704'
+
+
+
+CELERY_BROKER_URL = 'redis://localhost:6379'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/1'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_IGNORE_RESULT = False
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_TRACK_STARTED = True
+CELERYD_LOG_FILE = os.path.join(
+    BASE_DIR, 'celery', 'logs')   
+CELERYD_LOG_LEVEL = "INFO"

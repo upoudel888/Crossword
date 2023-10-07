@@ -3,6 +3,7 @@ import requests
 import json
 
 from django.template.defaulttags import register
+from .tasks import go_to_sleep
 
 @register.filter
 def get_range(value):
@@ -16,6 +17,10 @@ def get_grid_element(data, i, j):
 # Create your views here.
 def welcome(request):
     return render(request,'NYTgrid/base.html')
+
+def index(request):
+    task = go_to_sleep.delay(1)
+    return render(request, 'NYTgrid/index.html', {'task' : task, 'task_id' : task.task_id})
 
 
 def getGrid(request):

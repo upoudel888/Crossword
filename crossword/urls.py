@@ -23,7 +23,8 @@ urlpatterns = [
     path("",include("Home.urls")),
     path("solver/",include("Solver.urls")),
     path("generator/",include("Generator.urls")),
-    path("NYTgrid/", include('NYTgrid.urls'))
+    path("NYT/", include('NYTgrid.urls')),
+    path('celery-progress/', include('celery_progress.urls')),
 ]
 
 if settings.DEBUG:

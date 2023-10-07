@@ -5,7 +5,7 @@
     border-bottom: 3px solid black;
 }
 
-.validate-msg{
+.note-ribbon{
     padding: 1rem;
     text-align: center;
     background-color: var(--secondary-blue);
@@ -70,7 +70,7 @@
     align-items: flex-start;
     justify-content: center;
     flex-wrap: wrap;
-    height: 30rem;
+    height: 35rem;
 }
 
 .across-clues, .down-clues{
@@ -115,9 +115,14 @@
     padding: 0.3rem;
 }
 .clue-text{
-    width: 13rem;
+    width: 11rem;
     background-color: var(--secondary-blue-light);
     padding: 0.3rem;
+}
+
+.across-clue.highlight .clue-num,
+.across-clue.highlight .clue-text{
+    background-color: var(--secondary-blue);
 }
 
 .grid-change-options{
@@ -175,8 +180,8 @@
     padding: 0.5rem 1rem;
 }
 .grid{
-    width: 30rem;
-    height: 30rem;
+    width: 35rem;
+    height: 35rem;
     border: 2px solid black;
     background-color: rgba(0,0,0,1);
     display: flex;
@@ -199,32 +204,55 @@
     background-color: var(--light-white);
 }
 
+
+.grid-cell.highlight{
+    background-color: var(--secondary-blue) !important;
+}
+
+.grid-cell.highlight.wrong-cell{
+    background-color: var(--secondary-pink) !important;
+}
+
 .grid-cell:hover{
     box-shadow: inset 0 0 1rem 2px var(--secondary-blue);
 }
 .dead-cell{
     background-color: black;
-}  
+}
+
+.hide-for-answer.wrong-cell{
+    background-color: white;
+}
 .wrong-cell{
     background-color: var(--secondary-pink);
 }
 .cell-num{
-    font-size: 0.5cqw;
+    font-size: 55%;
     font-weight: 600;
     position: absolute;
+    color: rgb(59, 59, 59);
 }
 
 .cell-data{
     position: absolute;
     width: 100%;
     text-align: center;
-    font-size: 1.1cqw;
+    font-size: 110%;
     font-weight: bold;
-    transform: translateY(10%);
+    transform: translateY(15%);
 }
 
+.cell-data.hidden{
+    visibility: hidden;
+}
 
 .dummy{
     content: " ";
     height: 0.2rem;
+}
+
+@media screen and (max-width: 992px){
+    .note-ribbon{
+        min-width: 100%;
+    }
 }

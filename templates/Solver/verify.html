@@ -6,11 +6,12 @@
 {% endblock css %}
 
 {% block script %}
-    <script src= {%static "js/modify-grid.js"%} defer></script>
+    <script src={% static 'js/crossword.js' %}  type="module" defer></script>
+    <script src= {%static "js/modify-grid.js"%} type="module" defer></script>
 {% endblock script %}
 
 {% block hero %}
-    <div class="validate-msg">
+    <div class="note-ribbon">
         <div class="special-note">
             <span class="emphasis-text"> Validation </span> <br> <br>
             Please validate and correct the detections before proceeding to generate solution. <br><br>

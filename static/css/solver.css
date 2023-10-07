@@ -10,7 +10,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    margin-top: 1rem;
+    margin-top: 2rem;
 }
 
 .emphasis-text{
@@ -21,8 +21,6 @@
 
 .solver-hero{
     flex-grow: 1;
-    /* width: var(--breakpoint-lg); */
-     
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -33,7 +31,9 @@
 .solver-upload-info{
     display: flex;
     flex-direction: row;
-    position: relative;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
 }
 .upload-format{
     position: relative;
@@ -45,7 +45,21 @@
     left: -2rem;
     z-index: 1;
     color: var(--secondary-blue);
+    width:5rem;
+    gap: 2rem;
 }
+.format-card{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+img.solver-illus{
+    width: 30rem;
+    height: 30rem;
+}
+
 
 /* https://codepen.io/sosuke/pen/Pjoqqp */
 img.icon{
@@ -66,11 +80,13 @@ img.icon{
     display: flex;
     align-items: center;
     justify-content: center;
+    /* box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px; */
     box-shadow: rgba(17, 17, 26, 0.1) 0px 4px 16px, rgba(17, 17, 26, 0.1) 0px 8px 24px, rgba(17, 17, 26, 0.1) 0px 16px 56px;
 }
 
 
 .form-inner{
+    width: 100%;
     height: 100%;
     background-color: var(--light-white); 
     box-shadow: 0 0 4px #2860d8;
@@ -83,11 +99,9 @@ img.icon{
     padding: 0.5rem;
 }
 
-img.solver-illus{
-    width: 30rem;
-    height: 30rem;
+input[type="file" i]{
+    /* transform: translateX(2rem); */
 }
-
 
 input[type=file]::file-selector-button {
     margin-right: 20px;
@@ -106,6 +120,7 @@ input[type=file]::file-selector-button {
 
 .drop-container {
     flex-grow: 1;
+    width: 100%;
     position: relative;
     display: flex;
     gap: 0.7rem;
@@ -137,4 +152,35 @@ input[type=file]::file-selector-button {
     transition: color .2s ease-in-out;
   }
 
-  
+@media screen and ( max-width: 768px) {
+
+}
+@media  screen and (max-width:576px) {
+    .upload-format{
+        width: 100%;
+        margin: 1rem 0px;
+        flex-direction: row;
+        left: 0;
+        top: -1.6rem;
+    }
+    img.solver-illus{
+        width: 102%;
+        height: 102%;
+    }
+    .form-container{
+        width: 100%;
+        border-radius: 0px;
+        box-shadow: none;
+    }
+    .form-inner{
+        width: 90%;
+        height: 75%;
+        box-shadow: 0 7px 0 0 var(--secondary-blue-dark);
+        /* padding: 1.5rem; */
+    }
+    body{
+        width: -moz-fit-content;
+        width: fit-content;
+    }
+
+}

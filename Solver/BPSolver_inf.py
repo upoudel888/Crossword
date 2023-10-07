@@ -9,7 +9,6 @@ from tqdm import trange
 
 from .Utils_inf import print_grid, get_word_flips
 from .Solver_inf import Solver
-
 # the probability of each alphabetical character in the crossword
 UNIGRAM_PROBS = [('A', 0.0897379968935765), ('B', 0.02121248877769636), ('C', 0.03482206634145926), ('D', 0.03700942543460491), ('E', 0.1159773210750429), ('F', 0.017257461694024614), ('G', 0.025429024796296124), ('H', 0.033122967601502), ('I', 0.06800036223479956), ('J', 0.00294611331754349), ('K', 0.013860682888259786), ('L', 0.05130800574373874), ('M', 0.027962776827660175), ('N', 0.06631994270448001), ('O', 0.07374646543246745), ('P', 0.026750756212433214), ('Q', 0.001507814175439393), ('R', 0.07080460813737305), ('S', 0.07410988246048224), ('T', 0.07242993582154593), ('U', 0.0289272388037645), ('V', 0.009153522059555467), ('W', 0.01434705167591524), ('X', 0.003096729223103298), ('Y', 0.01749958208224007), ('Z', 0.002659777584995724)]
 
@@ -97,15 +96,17 @@ class BPSolver(Solver):
                  model_path,
                  ans_tsv_path,
                  dense_embd_path,
-                 max_candidates = 500000,
-                 process_id=0,
+                 max_candidates = 5000,
+                 process_id = 0,
+                 model_type = 'bert',
                  **kwargs):
         super().__init__(crossword, 
                          model_path,
                          ans_tsv_path,
                          dense_embd_path,
-                         max_candidates=max_candidates,
-                         process_id=process_id,
+                         max_candidates = max_candidates,
+                         process_id  = process_id,
+                         model_type = model_type,
                          **kwargs)
         self.crossword = crossword
 

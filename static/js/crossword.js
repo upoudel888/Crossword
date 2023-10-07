@@ -1,32 +1,23 @@
-<<<<<<< HEAD
-// I don't know why I made a class tho ( prastichin JS XD )
+export default class Crossword{
 
-class Grid{
-
-    constructor(){
-        // buttons
-        this.proceedButton = document.querySelector(".proceed-button");
-        this.decreaseButton = document.querySelector(".decrease-button");
-        this.increaseButton = document.querySelector(".increase-button");
-        this.rotateLeftButton = document.querySelector(".rot-left-button");
-        this.rotateRightButton = document.querySelector(".rot-right-button");
-        this.eraseButton = document.querySelector(".erase-button");
-
-        // variables
+    constructor(enableGridEdit){
+        // they are just variables and not DOM elements
         this.dimension = document.querySelectorAll(".grid-row").length;
-        this.grid = []          // array of arrays
+        this.grid = []          // array of arrays 
         this.grid_nums = []     // array of cell numbers starting from top to bottom left to right
-        this.across_nums = []   // array
-        this.down_nums = []     // array
+        this.across_nums = []   // array of non zero cell numbers part of across clues
+        this.across_length = []
+        this.down_nums = []     // array of non zero cell numbers part of down clues
+        this.down_length = []
 
         this.acrossCluesWithNums = {} // the clue and clue number extracted from the dom
         this.downCluesWithNums = {}   // these variables do not change
 
 
-        this.initialize();
+        this.initialize(enableGridEdit);
     }
 
-    initialize() {
+    initialize(enableGridEdit) {
         // DOM elements 
         this.parent = document.querySelector(".grid");
 
@@ -44,16 +35,161 @@ class Grid{
         this.grid = this.getGrid();      // uses this.cells to compute the cell number                  
         this.computeGridNum();           // computes this.grid_nums, this.across_nums and this.down_nums using this.grid
         this.getCluesWithNums();         // computes this.acrossCluesWithNums and this.downCluesWithNums
-        this.addCellEventListener();     // Adds click event listener to the grid cells
-        this.addButtonEventListener();
-        this.assignNewClues();
-
+        if(enableGridEdit){
+            this.assignNewClues();
+            this.addCellEventListener();     // Adds click event listener to the grid cells
+        }   
     }
 
-    updateDimensionInfo(){
-        this.dimensionInfo.innerText = `${this.dimension} X ${this.dimension}`;
-    }
+    async highlight(){
 
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+        const acrossCluesDiv = document.querySelector(".across-clues");
+        const downCluesDiv = document.querySelector(".down-clues");
+        let wrongEncounterCount = {}
+        
+        
+        for( let i in this.grid_nums){ // looping through keys
+
+            
+            if(this.across_nums.includes(this.grid_nums[i])){  
+                let currentlyHighlightingClue = null;
+                let currentlyHighlightingCellsPos = [];
+                
+                // highlight clue
+                let acrossClueElem = document.querySelector(`.across-clue-${this.grid_nums[i]}`);  
+                acrossClueElem.lastElementChild.style.backgroundColor = "var(--secondary-blue)";
+                acrossClueElem.firstElementChild.style.backgroundColor = "var(--secondary-blue)";
+                currentlyHighlightingClue = acrossClueElem;
+                
+                // scroll to make the clue visible 
+                let scrollPosition = acrossClueElem.offsetTop - acrossCluesDiv.offsetTop - (acrossCluesDiv.clientHeight/2); 
+                acrossCluesDiv.scrollTop = scrollPosition;
+                
+                // highlight cells
+                let length = this.across_length[this.across_nums.indexOf(this.grid_nums[i])];
+                let rowPos = Math.floor(i / this.dimension);
+                let colPos = i % this.dimension;
+                for(let j = 0; j < length; j++){
+                    let pos = rowPos * this.dimension + colPos + j;
+                
+                    this.cells[pos].style.backgroundColor = "var(--secondary-blue)";
+                    this.cells[pos].lastElementChild.style.visibility = "visible";
+                    this.cells[pos].classList.remove("hide-for-answer");
+                    
+                    if(this.cells[pos].classList.contains("wrong-cell")){
+                        if(! wrongEncounterCount[pos]){
+                            wrongEncounterCount[pos] = 1;
+                        }else{
+                            wrongEncounterCount[pos] += 1;
+                        }
+                    }
+                    
+                    currentlyHighlightingCellsPos.push(pos);
+                }
+                
+                // reverse the process
+                await sleep(300);
+                
+                currentlyHighlightingClue.firstElementChild.style.backgroundColor = "white";
+                currentlyHighlightingClue.lastElementChild.style.backgroundColor = "var(--secondary-blue-light)";
+                for( let pos1 of currentlyHighlightingCellsPos){
+                    if(this.cells[pos1].classList.contains("wrong-cell")){
+                        if(wrongEncounterCount[pos1] > 1){
+                            this.cells[pos1].style.backgroundColor = "var(--secondary-pink)";
+                        }else{
+                            this.cells[pos1].style.backgroundColor = "white";
+                        }
+                    }else{
+                        this.cells[pos1].style.backgroundColor = "white";
+                    }
+                }
+                
+                currentlyHighlightingClue.style.cursor = "pointer"; // add event listener
+                currentlyHighlightingClue.addEventListener("click",()=>{
+                    // remove every other highlight classes
+                    let highlighted = document.querySelectorAll(".highlight");
+                    highlighted.forEach(elem =>{elem.classList.remove("highlight")});
+                    
+                    currentlyHighlightingClue.classList.toggle("highlight");
+                    currentlyHighlightingCellsPos.forEach(pos2 =>{
+                        this.cells[pos2].classList.toggle("highlight");
+                    })
+                    
+                })
+            }
+            
+            
+            if(this.down_nums.includes(this.grid_nums[i])){
+                let currentlyHighlightingClue = null;
+                let currentlyHighlightingCellsPos = [];
+                // highlight clue
+                let downClueElem = document.querySelector(`.down-clue-${this.grid_nums[i]}`);  
+                downClueElem.lastElementChild.style.backgroundColor = "var(--secondary-blue)";
+                downClueElem.firstElementChild.style.backgroundColor = "var(--secondary-blue)";
+                currentlyHighlightingClue = downClueElem;
+            
+                // scroll to make the clue visible 
+                let scrollPosition = downClueElem.offsetTop - downCluesDiv.offsetTop - (downCluesDiv.clientHeight/2); 
+                downCluesDiv.scrollTop = scrollPosition;
+
+                // highlight cells
+                let length = this.down_length[this.down_nums.indexOf(this.grid_nums[i])];
+                let rowPos = Math.floor(i / this.dimension);
+                let colPos = i % this.dimension;
+                for(let j = 0; j < length; j++){
+                    let pos = (rowPos + j) * this.dimension + colPos;
+
+                    this.cells[pos].style.backgroundColor = "var(--secondary-blue)";
+                    this.cells[pos].lastElementChild.style.visibility = "visible";
+                    this.cells[pos].classList.remove("hide-for-answer");
+
+                    if(this.cells[pos].classList.contains("wrong-cell")){
+                        if(! wrongEncounterCount[pos]){
+                            wrongEncounterCount[pos] = 1;
+                        }else{
+                            wrongEncounterCount[pos] += 1;
+                        }
+                    }
+
+                    currentlyHighlightingCellsPos.push(pos);
+                }
+
+                // reverse the process
+                await sleep(300);
+                
+                currentlyHighlightingClue.firstElementChild.style.backgroundColor = "white";
+                currentlyHighlightingClue.lastElementChild.style.backgroundColor = "var(--secondary-blue-light)";
+                
+                for( let pos1 of currentlyHighlightingCellsPos){
+                    if(this.cells[pos1].classList.contains("wrong-cell")){
+                        if(wrongEncounterCount[pos1] > 1){
+                            this.cells[pos1].style.backgroundColor = "var(--secondary-pink)";
+                        }else{
+                            this.cells[pos1].style.backgroundColor = "white";
+                        }
+                    }else{
+                        this.cells[pos1].style.backgroundColor = "white";
+                    }
+                }
+                
+                currentlyHighlightingClue.style.cursor = "pointer"; // add event listener
+                currentlyHighlightingClue.addEventListener("click",()=>{
+                    // remove every other highlight classes
+                    let highlighted = document.querySelectorAll(".highlight");
+                    highlighted.forEach(elem =>{elem.classList.remove("highlight")});
+                    currentlyHighlightingClue.classList.toggle("highlight");
+                    currentlyHighlightingCellsPos.forEach(pos2 =>{
+                        this.cells[pos2].classList.toggle("highlight");
+                    })
+
+                })
+            }
+
+        }
+    }
 
     // when user clicks button to change the grid
     // changes are made to either this.grid_rows or this.cells to reflect to the dom
@@ -74,7 +210,10 @@ class Grid{
         this.assignNewClues();
     }
 
-    
+    updateDimensionInfo(){
+        this.dimensionInfo.innerText = `${this.dimension} X ${this.dimension}`;
+    }
+
     // this function is triggered when user clicks proceed button
     makeSolveRequest(){
 
@@ -117,14 +256,35 @@ class Grid{
             "across" : acrossAnswers,
             "down": downAnswers
         };
-        console.log(gridJSON)
+
         const hero = document.querySelector(".hero");   // to show the loading svg
         hero.classList.toggle("overlay"); 
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        const csrftoken = getCookie('csrftoken');
+
+        console.log(csrftoken)
+
 
         fetch('/solver/solve/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken,
                 // You might need other headers like CSRF token, authentication, etc.
             },
             body: JSON.stringify(gridJSON)
@@ -149,31 +309,35 @@ class Grid{
         .catch(error => {
             // Handle errors here
             console.error('Error:', error);
+            alert("An error Occured. Please Refresh the page");
         });
     }
 
     // ****************** grid manipulation ***************************
+    
 
+    // div.grid-cell
+    //   |-div.cell-num
+    //   |-div.cell-data
     createCell(){
-        // Create the main grid-cell div
-        const gridCellDiv = document.createElement('div');
+
+        const gridCellDiv = document.createElement('div'); 
         gridCellDiv.classList.add('grid-cell');
       
-        // Create the div for cell-num
         const cellNumDiv = document.createElement('div');
         cellNumDiv.classList.add('cell-num');
       
-        // Create the div for cell-data
         const cellDataDiv = document.createElement('div');
         cellDataDiv.classList.add('cell-data');
       
-        // Append cell-num and cell-data divs to the main grid-cell div
         gridCellDiv.appendChild(cellNumDiv);
         gridCellDiv.appendChild(cellDataDiv);
       
         return gridCellDiv;
     }
     
+    // div.grid-row
+    //   |- div.grid-cell  | div.grid-cell  | div.grid-cell
     createRow(rowArr){
         const gridRowDiv = document.createElement('div');
         gridRowDiv.classList.add("grid-row");
@@ -186,10 +350,10 @@ class Grid{
 
     increaseGrid() {
         if (this.dimension < 30){
-            // change in cell position causes the event listener to operate on different mirror cell
-            // so we remove it
-            // we add it later using from this.reinitializeAfterUpdate() method
-            this.removeCellEventListener();
+            // event listeners become semtically incorrect ( so remove them )
+            // later update correct ones using this.reinitializeAfterUpdate function
+            this.removeCellEventListener(); 
+
             // Add a empty cell (" ") to each existing row
             for (let i = 0; i < this.dimension; i++) {
                 if(this.dimension % 2 != 0){
@@ -205,7 +369,6 @@ class Grid{
             }else{
                 this.parent.prepend(this.createRow(newRow));    
             }
-            
             this.dimension++;
             this.reinitializeAfterUpdate();  
             this.updateDimensionInfo();
@@ -314,8 +477,6 @@ class Grid{
                 this.grid[click_x1][click_y1] = ' ';
             }
         }
-        // updating this.cell
-
         // computing new grid nums
         this.computeGridNum();
         // updating the dom with new numbers
@@ -338,33 +499,6 @@ class Grid{
             cell.replaceWith(cell.cloneNode(true));
         });
     }
-
-    addButtonEventListener(){
-        this.proceedButton.addEventListener('click',()=>{
-            this.makeSolveRequest();
-        });
-
-        this.decreaseButton.addEventListener('click',()=>{
-            this.decreaseGrid();
-        });
-        
-        this.increaseButton.addEventListener('click',()=>{
-            this.increaseGrid();
-        });
-
-        this.rotateLeftButton.addEventListener("click",()=>{
-            this.rotateGrid(false);
-        });
-
-        this.rotateRightButton.addEventListener("click",()=>{
-            this.rotateGrid(true);
-        });
-
-        this.eraseButton.addEventListener("click",()=>{
-            this.eraseGrid();
-        });
-    }
-
     
     // change the UI with the updated grid numbers
     assignNewNumbers(){
@@ -408,16 +542,14 @@ class Grid{
         const acrossParent = document.querySelector(".across-clues");
         const downParent = document.querySelector(".down-clues");
 
-        // deleting previous across and down clues
-        this.acrossClues.forEach((elem)=>{
+        this.acrossClues.forEach((elem)=>{  // deleting previous DOM elements
             acrossParent.removeChild(elem);
         })
         this.downClues.forEach((elem)=>{
             downParent.removeChild(elem);
         })
 
-        // adding new across clues
-        this.across_nums.forEach((elem)=>{
+        this.across_nums.forEach((elem)=>{  // adding new DOM elements
             const divElement = document.createElement('div');
             const clueNumElement = document.createElement('div');
             const clueTextElement = document.createElement('div');
@@ -506,12 +638,13 @@ class Grid{
     // computes the grid num from using the grid colors ( it uses this.grid to see the colors )
     // returns an array
     computeGridNum() {
-
-        this.grid_nums = [];
+    
+        this.grid_nums = [];    // empty class variables
         this.across_nums = [];
         this.across_length = [];
         this.down_length = [];
         this.down_nums = [];
+
         let in_horizontal = [];
         let in_vertical = [];
         let num = 0;
@@ -614,7 +747,7 @@ class Grid{
                     }
                     // If only vertical length is greater than 1, then update in_vertical array
                     else if (vertical_length > 1) {
-                        in_vertical.push(...temp_vertical_arr);
+                        in_vertical.push(...temp_vertical_arr);                        
                         num++;
                         this.down_length.push(vertical_length);
                         this.down_nums.push(num);
@@ -644,44 +777,5 @@ class Grid{
         this.across_length = JSON.parse(JSON.stringify(temp));
 
     }
+
 }
-
-let grid = new Grid();
-=======
-import Crossword from "./crossword.js";
-// initializing the class
-let cw = new Crossword(true); // true means enable grid editing
-
-// buttons
-const proceedButton = document.querySelector(".proceed-button");
-const decreaseButton = document.querySelector(".decrease-button");
-const increaseButton = document.querySelector(".increase-button");
-const rotateLeftButton = document.querySelector(".rot-left-button");
-const rotateRightButton = document.querySelector(".rot-right-button");
-const eraseButton = document.querySelector(".erase-button");
-
-
-proceedButton.addEventListener('click',()=>{
-    cw.makeSolveRequest();
-});
-
-decreaseButton.addEventListener('click',()=>{
-    cw.decreaseGrid();
-});
-
-increaseButton.addEventListener('click',()=>{
-    cw.increaseGrid();
-});
-
-rotateLeftButton.addEventListener("click",()=>{
-    cw.rotateGrid(false);
-});
-
-rotateRightButton.addEventListener("click",()=>{
-    cw.rotateGrid(true);
-});
-
-eraseButton.addEventListener("click",()=>{
-    cw.eraseGrid();
-});
->>>>>>> 3107997fc2cfbda47e3f5ae21c519b0955965f6e
