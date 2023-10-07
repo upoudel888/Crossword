@@ -174,7 +174,7 @@ input[type=file]::file-selector-button {
     }
     .form-inner{
         width: 90%;
-        height: 70%;
+        height: 75%;
         box-shadow: 0 7px 0 0 var(--secondary-blue-dark);
         /* padding: 1.5rem; */
     }

@@ -393,7 +393,7 @@ def get_square_color(image, box):
 def extract_grid(image):
 
     # Apply Gaussian blur to reduce noise and improve edge detection
-    blurred = cv2.GaussianBlur(image, (5, 5), 0)
+    blurred = cv2.GaussianBlur(image, (3, 3), 0)
     # Apply Canny edge detection
     edges = cv2.Canny(blurred, 50, 150)
 
@@ -422,7 +422,7 @@ def extract_grid(image):
 
     if(largest_contour.shape != (4,1,2)):
         largest_contour = cv2.convexHull(largest_contour)
-        if(largest_contour.shape != (4,1,3)):
+        if(largest_contour.shape != (4,1,2)):
             rect = cv2.minAreaRect(largest_contour)
             largest_contour = cv2.boxPoints(rect)
             largest_contour = largest_contour.astype('int')
@@ -466,6 +466,10 @@ def extract_grid(image):
     # Apply the perspective transformation to the cropped_image
     transformed_img = cv2.warpPerspective(image, matrix, (403, 403))
     cropped_image = transformed_img.copy()
+
+    plt.figure(figsize=(12,8))
+    plt.axis("off")
+    plt.imsave("noice1.jpg",cv2.cvtColor(cropped_image,cv2.COLOR_GRAY2RGB))
 
     # if the largest contour was not exactly quadilateral
 
@@ -555,8 +559,8 @@ def extract_grid(image):
     # removing the duplicate corners
     corners_no_dup = list(set(corners1))
 
-    min_cell_width = w/25
-    min_cell_height = h/25
+    min_cell_width = w/30
+    min_cell_height = h/30
 
     # grouping coordinates into probabale array that could fit a horizontal and vertical lien
     vertical_lines = group_lines(corners_no_dup,0,min_cell_height)
