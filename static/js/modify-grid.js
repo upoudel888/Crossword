@@ -116,7 +116,6 @@ class Grid{
             "across" : acrossAnswers,
             "down": downAnswers
         };
-
         console.log(gridJSON)
         const hero = document.querySelector(".hero");   // to show the loading svg
         hero.classList.toggle("overlay"); 

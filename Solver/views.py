@@ -60,6 +60,7 @@ def get_JSON_from_puz(puz_file):
 
 
 def get_rows_and_clues(grid_data):
+    print(grid_data)
     rows = []  # 2D array[[row1],[row2]] where each element is [cell_number,gold_answer,predicted_answer]
     no_of_rows = grid_data['size']['rows']
     no_of_cols = grid_data['size']['cols']
@@ -265,6 +266,7 @@ def solve1(request):
     context = {}
     if( request.method == "POST"):
         received_data = json.loads(request.body.decode('utf-8'))  # Decode the byte data to a string
+        print(received_data)
         if(not request.session.get('user_uploaded_image')):
             print(request.session.get("json"))
             print("\nGenerating Solutions")
