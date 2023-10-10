@@ -26,7 +26,7 @@ SECRET_KEY = "django-insecure-i&^z^mr51dtxhq-$2^d$%i=&tt3$1#6l8uqg%ufnutqd^w$0fe
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['.vercel.app']
 
 
 # Application definition
@@ -151,12 +151,13 @@ CACHES = {
      }
 }
 
-# CELERY_BROKER_URL = 'redis://default:YFDSLJn1dlzop854RkXC2Euv4h783ZNb@redis-19704.c56.east-us.azure.cloud.redislabs.com:19704'
+CELERY_BROKER_URL = 'redis://default:YFDSLJn1dlzop854RkXC2Euv4h783ZNb@redis-19704.c56.east-us.azure.cloud.redislabs.com:19704'
+CELERY_RESULT_BACKEND = 'redis://default:YFDSLJn1dlzop854RkXC2Euv4h783ZNb@redis-19704.c56.east-us.azure.cloud.redislabs.com:19704/0'
 
 
 
-CELERY_BROKER_URL = 'redis://localhost:6379'
-CELERY_RESULT_BACKEND = 'redis://localhost:6379/1'
+# CELERY_BROKER_URL = 'redis://localhost:6379'
+# CELERY_RESULT_BACKEND = 'redis://localhost:6379/1'
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TASK_SERIALIZER = 'json'
@@ -166,3 +167,4 @@ CELERY_TRACK_STARTED = True
 CELERYD_LOG_FILE = os.path.join(
     BASE_DIR, 'celery', 'logs')   
 CELERYD_LOG_LEVEL = "INFO"
+CELERY_IMPORTS = ("NYTgrid.tasks", )

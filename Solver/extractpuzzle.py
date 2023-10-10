@@ -547,7 +547,6 @@ def extract_grid(image):
         x,y = i
         image2 = cv2.circle(drawn_image, (int(x),int(y)), radius=0, color=(0, 0, 255), thickness=3)
 
-    cv2.imwrite("noice1.jpg",drawn_image)
     # -- Using Regression Model to approximate horizontal and vertical Lines
 
     # reducing to 0 decimal places
