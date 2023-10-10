@@ -58,6 +58,7 @@ def get_JSON_from_puz(puz_file):
 
 
 def get_rows_and_clues(grid_data):
+    print(grid_data)
     rows = []  # 2D array[[row1],[row2]] where each element is [cell_number,gold_answer,predicted_answer]
     no_of_rows = grid_data['size']['rows']
     no_of_cols = grid_data['size']['cols']

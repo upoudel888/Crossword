@@ -6,7 +6,7 @@ import pytesseract
 import re
 import matplotlib.pyplot as plt
 
-pytesseract.pytesseract.tesseract_cmd = 'C:/Program Files/Tesseract-OCR/tesseract'
+pytesseract.pytesseract.tesseract_cmd = 'C:/Program Files/Tesseract-OCR/tesseract.exe'
 image_path = "try heree.jpg"
 
 def first_preprocessing(image):
