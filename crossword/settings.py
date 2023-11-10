@@ -26,7 +26,7 @@ SECRET_KEY = "django-insecure-i&^z^mr51dtxhq-$2^d$%i=&tt3$1#6l8uqg%ufnutqd^w$0fe
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['.vercel.app']
+ALLOWED_HOSTS = ['.vercel.app','127.0.0.1']
 
 
 # Application definition
@@ -127,7 +127,7 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
 		os.path.join(BASE_DIR,'static')
 ]
-STATIC_ROOT = os.path.join(BASE_DIR)
+STATIC_ROOT = BASE_DIR / "staticfiles" / "static"
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -140,16 +140,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"  # or comfortabley anything else
-
-CACHES = {
-    'default': {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379/1",
-        "OPTIONS": {
-              "CLIENT_CLASS": "django_redis.client.DefaultClient",
-        }
-     }
-}
 
 CELERY_BROKER_URL = 'redis://default:YFDSLJn1dlzop854RkXC2Euv4h783ZNb@redis-19704.c56.east-us.azure.cloud.redislabs.com:19704'
 CELERY_RESULT_BACKEND = 'redis://default:YFDSLJn1dlzop854RkXC2Euv4h783ZNb@redis-19704.c56.east-us.azure.cloud.redislabs.com:19704/0'

@@ -11,7 +11,8 @@
     <link rel="stylesheet" href="https://site-assets.fontawesome.com/releases/v6.4.2/css/all.css" >
     <link rel="stylesheet" href="https://site-assets.fontawesome.com/releases/v6.4.2/css/sharp-solid.css">
     <link rel="stylesheet" href="https://site-assets.fontawesome.com/releases/v6.4.2/css/sharp-regular.css">
-    <link rel="stylesheet" href="https://site-assets.fontawesome.com/releases/v6.4.2/css/sharp-light.css">
+    <link rel="stylesheet" href="https://site-assets.fontawesome.com/releases/v6.4.2/css/sharp-light.css">  
+    <script src= {%static "js/base.js"%} defer></script>
     
     {% block css %}{% endblock css %}
     <title>EZ-Crossword</title>
@@ -22,6 +23,11 @@
         <div class="logo-box">
             <img src={% static "images/logo.svg"%} alt="crossword-logo" class="logo">
             <div class="logo-text">EZ-Crossword</div>
+        </div>
+        <div class="ham">
+            <span></span>
+            <span></span>
+            <span></span>
         </div>
         <div class="nav-links">
             <ul>

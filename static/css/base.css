@@ -5,7 +5,7 @@
     --font-size-large: 1.1rem;
     --font-size-logo : 1.3rem;
 
-
+    --main-white: #ffff;
     --light-gray: #e3e3e1;
     --light-white: #fafafa;
 
@@ -53,7 +53,6 @@ body{
  }
 
 nav{
-   position: relative;
    height: 4rem;
    display: flex; 
    flex-direction: row;
@@ -63,17 +62,16 @@ nav{
    z-index: 10;
    overflow: hidden;
    box-shadow: 0px 1px 0px rgba(0,0,0,.2);
-   padding-left: 1rem;
-   padding-right: 1rem;
    margin-left: auto;
    margin-right: auto;
    position: sticky;
    top: 0;
-   background-color: white;
+   background-color: var(--main-white);
 }
 
 
 .logo-box{
+    margin-left: 1rem;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -92,8 +90,94 @@ nav{
     line-height: 2rem;
     font-weight: bolder;
 }
+
+nav .ham{
+    margin-right: 1rem;
+    /* w:h ration 4/3 */
+    display: none;
+    width: 1.6rem;
+    height: 1.2rem;
+    position: relative;
+    cursor: pointer;
+    -webkit-transform: rotate(0deg);
+    -moz-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+        transform: rotate(0deg);
+    -webkit-transition: .5s ease-in-out;
+    -moz-transition: .5s ease-in-out;
+    -o-transition: .5s ease-in-out;
+        transition: .5s ease-in-out;
+}
+
+nav .ham span{
+    display: block;
+    position: absolute;
+    height: 18%;
+    width: 100%;
+    background: black;
+    opacity: 1;
+    left: 0;
+    -webkit-transform: rotate(0deg);
+    -moz-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    transform: rotate(0deg);
+    -webkit-transition: .25s ease-in-out;
+    -moz-transition: .25s ease-in-out;
+    -o-transition: .25s ease-in-out;
+    transition: .25s ease-in-out;
+}
+
+nav .ham span:nth-child(1) {
+    top: 0%;
+    -webkit-transform-origin: left center;
+    -moz-transform-origin: left center;
+    -o-transform-origin: left center;
+    transform-origin: left center;
+}
+  
+nav .ham span:nth-child(2) {
+    top: 40%;
+    -webkit-transform-origin: left center;
+    -moz-transform-origin: left center;
+    -o-transform-origin: left center;
+    transform-origin: left center;
+}
+  
+nav .ham span:nth-child(3) {
+    top: 80%;
+    -webkit-transform-origin: left center;
+    -moz-transform-origin: left center;
+    -o-transform-origin: left center;
+    transform-origin: left center;
+}
+  
+nav .ham.open span:nth-child(1) {
+    -webkit-transform: rotate(45deg);
+    -moz-transform: rotate(45deg);
+    -o-transform: rotate(45deg);
+    transform: rotate(45deg);
+    top: -6.67%;
+    left: 13%;
+}
+  
+nav .ham.open span:nth-child(2) {
+    width: 0%;
+    opacity: 0;
+}
+  
+nav .ham.open span:nth-child(3) {
+    -webkit-transform: rotate(-45deg);
+    -moz-transform: rotate(-45deg);
+    -o-transform: rotate(-45deg);
+    transform: rotate(-45deg);
+    top: 86.67%;
+    left: 13%;
+}
+
 .nav-links{
     width: 40rem;
+    transform: none;
+    margin-right: 1rem;
 }
 .nav-links ul{
     display: flex;
@@ -117,7 +201,6 @@ nav{
 
 .hero{
     flex-grow: 1;
-    padding: 1;
     display: flex;
     flex-direction: column;
     margin-left: auto;
@@ -172,26 +255,55 @@ footer{
     color: #fff;
 
   }
-  .btn-11:hover {
+.btn-11:hover {
     transform: scale(1.05);
     box-shadow: 0 0 8px rgba(0,0,0,0);
 
   }
   
-  .btn-11:active{
+.btn-11:active{
     box-shadow:  4px 4px 6px 0 rgba(255,255,255,.3),
                 -4px -4px 6px 0 rgba(116, 125, 136, .2), 
       inset -4px -4px 6px 0 rgba(255,255,255,.2),
       inset 4px 4px 6px 0 rgba(0, 0, 0, .2);
   }
   
-  .bold{
+.bold{
     font-weight: bold;
-  }
+}
+
 
 @media screen and ( max-width: 992px) {
-    .nav-links{
+    nav{
         width: 100%;
+        overflow: visible;
+    }
+    nav .ham{
+        display: block;
+    }
+    nav .nav-links{
+        padding: 0rem;
+        margin: 0rem;
+        width: 100%;
+        transform: translateX(120%);
+        display: block;
+        border-bottom: 1px solid rgba(0,0,0,.2);
+        border-top: 1px solid rgba(0,0,0,.2);
+        background-color: white;
+    }
+    nav .nav-links ul{
+        margin: 0.5rem 0rem ;
+        flex-direction: column; 
+        gap: 1.2rem;
+    }
+    .scale-in-hor-right {
+        -webkit-animation: scale-in-hor-right 0.25s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+                animation: scale-in-hor-right 0.25s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+    }
+    
+    .scale-out-hor-right {
+        -webkit-animation: scale-out-hor-right 0.25s cubic-bezier(0.550, 0.085, 0.680, 0.530) both;
+                animation: scale-out-hor-right 0.25s cubic-bezier(0.550, 0.085, 0.680, 0.530) both;
     }
 }
 @media screen and ( max-width: 68rem) {
@@ -199,3 +311,76 @@ footer{
         width: 20rem;
     }
 }
+
+
+/* animista.net for animations */
+
+
+ @-webkit-keyframes scale-in-hor-right {
+    0% {
+      -webkit-transform: scaleX(0);
+              transform: scaleX(0);
+      -webkit-transform-origin: 100% 100%;
+              transform-origin: 100% 100%;
+      opacity: 1;
+    }
+    100% {
+      -webkit-transform: scaleX(1);
+              transform: scaleX(1);
+      -webkit-transform-origin: 100% 100%;
+              transform-origin: 100% 100%;
+      opacity: 1;
+    }
+  }
+  @keyframes scale-in-hor-right {
+    0% {
+      -webkit-transform: scaleX(0);
+              transform: scaleX(0);
+      -webkit-transform-origin: 100% 100%;
+              transform-origin: 100% 100%;
+      opacity: 1;
+    }
+    100% {
+      -webkit-transform: scaleX(1);
+              transform: scaleX(1);
+      -webkit-transform-origin: 100% 100%;
+              transform-origin: 100% 100%;
+      opacity: 1;
+    }
+  }
+  
+
+
+ @-webkit-keyframes scale-out-hor-right {
+    0% {
+      -webkit-transform: scaleX(1);
+              transform: scaleX(1);
+      -webkit-transform-origin: 100% 100%;
+              transform-origin: 100% 100%;
+      opacity: 1;
+    }
+    100% {
+      -webkit-transform: scaleX(0);
+              transform: scaleX(0);
+      -webkit-transform-origin: 100% 100%;
+              transform-origin: 100% 100%;
+      opacity: 1;
+    }
+  }
+  @keyframes scale-out-hor-right {
+    0% {
+      -webkit-transform: scaleX(1);
+              transform: scaleX(1);
+      -webkit-transform-origin: 100% 100%;
+              transform-origin: 100% 100%;
+      opacity: 1;
+    }
+    100% {
+      -webkit-transform: scaleX(0);
+              transform: scaleX(0);
+      -webkit-transform-origin: 100% 100%;
+              transform-origin: 100% 100%;
+      opacity: 1;
+    }
+  }
+  
